@@ -1,14 +1,34 @@
 # Speechineer SDK
 
-Add **realtime speech-to-form** to any web app: the user speaks, and structured field values
-stream into your form as they are recognized — plus text-to-form for text the user typed or
-pasted. One client, one session per capability, the same options and state in every framework.
+Build **voice-based documentation** into your product. Someone speaks — a clinician after a
+visit, a technician at a machine, an agent after a call — and Speechineer turns what was said
+into structured, typed values your app receives while they are still talking.
+
+What gets captured is not hard-coded. You model each documentation step once in Speechineer —
+the fields it collects, the wording that guides each one, the language it is written in — and
+your app simply names it. Change the definition later and every integration follows, with no
+release on your side.
+
+> **You need a Speechineer account** to model your documentation steps and to get the API key
+> the SDK authenticates with. See **[speechineer.com](https://speechineer.com)**.
 
 | Package | Install this when… |
 |---|---|
 | [`@speechineer/react`](packages/react/) | You are on **React** — `SpeechineerProvider` + `useSpeechToForm` / `useTextToForm`. |
 | [`@speechineer/angular`](packages/angular/) | You are on **Angular** — `provideSpeechineer()` + `injectSpeechToForm` / `injectTextToForm`, state as signals. |
 | [`@speechineer/js`](packages/js/) | You are on **plain JavaScript** or another framework — `createClient()` + `client.speechToForm()` / `client.textToForm()`. (The React and Angular packages build on it and re-export it.) |
+
+## How an integration works
+
+1. **Model the documentation step in Speechineer.** Which fields it captures, how to guide
+   each one, which language the definition is written in. It gets a key and a version.
+2. **Install the package for your framework** and create the client once, with your API key.
+3. **Name that step in your code.** Values arrive per field as they are recognized; you render
+   them into whatever UI you already have.
+
+In the API a documentation step is called a **form** — the set of fields it captures. Naming
+one you modelled in Speechineer is `form: { source: "workspace", … }`, and that is the path
+most integrations take.
 
 ## Quick start
 
@@ -19,7 +39,8 @@ npm install @speechineer/react
 ```
 
 ```tsx
-// main.tsx — once: your workspace's API key (development) or a token your server signs (production)
+// main.tsx — once, at app startup. Development: your workspace API key + who the end user is.
+// Production: a short-lived token your server signs per user.
 import { SpeechineerProvider } from "@speechineer/react";
 
 <SpeechineerProvider apiKey={import.meta.env.VITE_SPEECHINEER_KEY} account={{ key: user.id }}>
@@ -28,23 +49,21 @@ import { SpeechineerProvider } from "@speechineer/react";
 ```
 
 ```tsx
-import { useSpeechToForm, FormField } from "@speechineer/react";
+import { useSpeechToForm } from "@speechineer/react";
 
-const fields = [
-  FormField.text("patientName", "Extract the patient full name"),
-  FormField.integer("age", "Extract the age in years"),
-];
-
-function TalkToForm() {
+function VisitNotes() {
+  // The key, version and language of the step you modelled in Speechineer.
   const { start, stop, isListening, values } = useSpeechToForm({
-    form: { source: "inline", key: "patient-intake", version: "1", language: "en", fields },
+    form: { source: "workspace", key: "visit-notes", version: "1", language: "en" },
   });
+
   return (
     <>
       <button type="button" onClick={isListening ? stop : () => void start()}>
-        {isListening ? "Stop" : "Talk"}
+        {isListening ? "Stop" : "Dictate"}
       </button>
-      <input value={String(values.patientName ?? "")} readOnly />
+      {/* values is keyed by the field ids you configured */}
+      <input value={String(values.diagnosis ?? "")} readOnly />
     </>
   );
 }
@@ -59,6 +78,7 @@ npm install @speechineer/angular
 ```ts
 // app.config.ts
 import { provideSpeechineer } from "@speechineer/angular";
+
 export const appConfig: ApplicationConfig = {
   providers: [provideSpeechineer({ apiKey: environment.speechineerKey, account: { key: userId } })],
 };
@@ -66,23 +86,20 @@ export const appConfig: ApplicationConfig = {
 
 ```ts
 import { Component } from "@angular/core";
-import { injectSpeechToForm, FormField } from "@speechineer/angular";
+import { injectSpeechToForm } from "@speechineer/angular";
 
 @Component({
-  selector: "talk-to-form",
+  selector: "visit-notes",
   template: `
-    <button type="button" (click)="voice.isListening() ? voice.stop() : voice.start()">
-      {{ voice.isListening() ? "Stop" : "Talk" }}
+    <button type="button" (click)="dictation.isListening() ? dictation.stop() : dictation.start()">
+      {{ dictation.isListening() ? "Stop" : "Dictate" }}
     </button>
-    <input [value]="voice.values()['patientName'] ?? ''" readonly />
+    <input [value]="dictation.values()['diagnosis'] ?? ''" readonly />
   `,
 })
-export class TalkToForm {
-  readonly voice = injectSpeechToForm({
-    form: {
-      source: "inline", key: "patient-intake", version: "1", language: "en",
-      fields: [FormField.text("patientName", "Extract the patient full name")],
-    },
+export class VisitNotes {
+  readonly dictation = injectSpeechToForm({
+    form: { source: "workspace", key: "visit-notes", version: "1", language: "en" },
   });
 }
 ```
@@ -94,42 +111,62 @@ npm install @speechineer/js
 ```
 
 ```ts
-import { createClient, FormField } from "@speechineer/js";
+import { createClient } from "@speechineer/js";
 
 const speechineer = createClient({ apiKey: "spnr_live_…", account: { key: user.id } });
+
 const session = speechineer.speechToForm({
-  form: {
-    source: "inline", key: "patient-intake", version: "1", language: "en",
-    fields: [FormField.text("patientName", "Extract the patient full name")],
-  },
+  form: { source: "workspace", key: "visit-notes", version: "1", language: "en" },
 });
+
 session.subscribe((state) => render(state));   // state.values, state.isListening, state.error, …
 await session.start();                          // mic permission → connect → listening
 session.stop();                                 // pause; late values still arrive
-await session.end();                            // finish the session
+await session.end();                            // finish
 ```
 
 ## The concepts
 
-- **Client** — created once with your credentials: an unsigned workspace `apiKey` + `account`
-  (development) or a `token` your server signs per user, as a string or a function that fetches a
-  fresh one (production). `baseUrl` defaults to the production Speechineer API.
-- **Form definition** — `form.source: "workspace"` names a form you configured in Speechineer
-  (fields, prompts and models come from your workspace); `form.source: "inline"` ships the fields
-  from your code (built with `FormField`), optionally with `prompts` and `models`.
-- **Capabilities** — `speechToForm` (add `transcript: true` to also receive the spoken text) and
-  `textToForm` (`extract(text)`).
-- **Session state** — every session reports one immutable `SessionState`: `status`, `sessionId`,
-  `error`, `connections`, the latest `values`, the `transcript`, and the flags `isListening`,
-  `isConnecting`, `isEnding`. React gives it to you as plain values, Angular as signals,
-  JavaScript via `subscribe()` / `getState()`.
+- **Client** — created once with your credentials: a workspace `apiKey` plus an `account`
+  identifying the end user (development), or a `token` your server signs per user, as a string
+  or a function that fetches a fresh one (production). `baseUrl` defaults to Speechineer.
+- **Form** — the documentation step. `form.source: "workspace"` names one you modelled in
+  Speechineer, so its fields, guidance and models live there and can change without a release.
+  Pin `version` so your integration keeps working while a new version is drafted.
+- **Capabilities** — `speechToForm` for spoken input (add `transcript: true` to also receive
+  the spoken text), and `textToForm` for text the user typed, pasted or imported
+  (`extract(text)`) — the same documentation step, a different way in.
+- **Session state** — one immutable `SessionState`: `status`, `sessionId`, `error`,
+  `connections`, the latest `values`, the `transcript`, and the flags `isListening`,
+  `isConnecting`, `isEnding`. React gives it as plain values, Angular as signals, JavaScript
+  via `subscribe()` / `getState()`.
 - **Callbacks** — optional: `onFieldValue`, `onTranscript`, `onSessionStart`, `onStateChange`,
   `onEvent`, `onError(SpeechineerError)` — everything they report is also in the state.
 - **Errors** — one `SpeechineerError` with a stable `code` (`MICROPHONE_DENIED`, `NETWORK`,
-  `NOT_FOUND`, a service error code, …), the `phase` it happened in, and `recoverable`.
+  `NOT_FOUND`, …), the `phase` it happened in, and `recoverable`.
 
-Full documentation — guides and the per-framework API reference — lives in the Speechineer
-developer docs.
+## Defining a step in code instead
+
+For prototypes, or a step that genuinely belongs to your codebase, you can declare the fields
+inline rather than modelling them in Speechineer:
+
+```ts
+import { FormField } from "@speechineer/js";
+
+form: {
+  source: "inline", key: "visit-notes", version: "1", language: "en",
+  fields: [
+    FormField.text("diagnosis", "Extract the diagnosis"),
+    FormField.date("followUp", "Extract the follow-up date"),
+  ],
+}
+```
+
+`FormField` covers `text`, `textarea`, `integer`, `date`, `datetime` and `select`, and you can
+add `prompts` and `models` to the form. Speechineer records the step under the same key and
+version, so usage is attributed exactly as it is for a step you modelled there — but the
+definition now ships with your release, which is why `source: "workspace"` is the default
+recommendation.
 
 ## Data processing & legal
 

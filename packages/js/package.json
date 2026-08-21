@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/js",
   "version": "0.7.0",
-  "description": "Speechineer for JavaScript — realtime speech-to-form sessions for any web app, framework-free.",
+  "description": "Build voice-based documentation into any web app \u2014 spoken or typed input becomes structured, typed values in real time. Framework-free.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -32,10 +32,14 @@
   },
   "keywords": [
     "speechineer",
-    "speech-to-form",
+    "voice-documentation",
+    "dictation",
+    "speech-to-text",
     "voice-input",
-    "form-automation",
-    "ai-forms"
+    "structured-data",
+    "speech-to-form",
+    "ai-forms",
+    "forms"
   ],
   "license": "Apache-2.0",
   "author": "Aicendence GmbH",

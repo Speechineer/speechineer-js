@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/angular",
   "version": "0.7.0",
-  "description": "Speechineer for Angular — provideSpeechineer() and one inject function per capability to fill forms by voice or from text, with signals.",
+  "description": "Build voice-based documentation into your Angular app \u2014 provideSpeechineer() and one inject function per capability, with state as signals.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -27,8 +27,12 @@
   },
   "keywords": [
     "speechineer",
-    "speech-to-form",
+    "voice-documentation",
+    "dictation",
+    "speech-to-text",
     "voice-input",
+    "structured-data",
+    "speech-to-form",
     "ai-forms",
     "angular",
     "signals"

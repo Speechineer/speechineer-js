@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/react",
   "version": "0.7.0",
-  "description": "Speechineer for React — a provider and one hook per capability to fill forms by voice or from text.",
+  "description": "Build voice-based documentation into your React app \u2014 a provider and one hook per capability turn speech or text into structured, typed values.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -27,8 +27,12 @@
   },
   "keywords": [
     "speechineer",
-    "speech-to-form",
+    "voice-documentation",
+    "dictation",
+    "speech-to-text",
     "voice-input",
+    "structured-data",
+    "speech-to-form",
     "ai-forms",
     "react",
     "hooks"
