@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest an improvement to the SDK
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The integration goal, in your words — which framework, which capability.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like the SDK to offer?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today instead?

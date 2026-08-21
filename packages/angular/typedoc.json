@@ -1,0 +1,31 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/docs-entry.ts"],
+  "tsconfig": "tsconfig.typedoc.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "router": "module",
+  "readme": "none",
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "disableSources": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true,
+  "expandObjects": true,
+  "parametersFormat": "table",
+  "interfacePropertiesFormat": "table",
+  "propertyMembersFormat": "table",
+  "typeDeclarationFormat": "table",
+  "enumMembersFormat": "table",
+  "indexFormat": "table",
+  "sort": ["kind", "source-order"],
+  "kindSortOrder": ["Interface", "TypeAlias", "Enum", "Variable", "Function", "Class", "Namespace", "Module", "Reference"],
+  "groupOrder": ["Setup", "Capability: Speech to form", "Capability: Text to form", "*"],
+  "tableColumnSettings": {
+    "hideInherited": true,
+    "hideModifiers": true,
+    "hideSources": true,
+    "hideOverrides": true,
+    "leftAlignHeaders": true
+  }
+}

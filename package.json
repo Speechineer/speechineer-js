@@ -1,0 +1,37 @@
+{
+  "name": "@speechineer/packages",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Speechineer SDK workspace — @speechineer/js, @speechineer/react, @speechineer/angular",
+  "workspaces": [
+    "packages/js",
+    "packages/react",
+    "packages/angular"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run type-check --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "check:packages": "publint --strict packages/js && publint --strict packages/react && publint --strict packages/angular && attw --pack packages/js --ignore-rules cjs-resolves-to-esm && attw --pack packages/react --ignore-rules cjs-resolves-to-esm && attw --pack packages/angular --ignore-rules cjs-resolves-to-esm",
+    "release": "npm run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "typedoc": "^0.28.0",
+    "typedoc-plugin-markdown": "^4.0.0",
+    "typescript": "^5.9.3",
+    "publint": "^0.3.12",
+    "@arethetypeswrong/cli": "^0.18.2"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/speechineer/speechineer-js.git"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

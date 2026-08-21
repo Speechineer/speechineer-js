@@ -1,0 +1,63 @@
+{
+  "name": "@speechineer/react",
+  "version": "0.7.0",
+  "description": "Speechineer for React — a provider and one hook per capability to fill forms by voice or from text.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "speechineer",
+    "speech-to-form",
+    "voice-input",
+    "ai-forms",
+    "react",
+    "hooks"
+  ],
+  "license": "Apache-2.0",
+  "author": "Aicendence GmbH",
+  "homepage": "https://github.com/speechineer/speechineer-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/speechineer/speechineer-js.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/speechineer/speechineer-js/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@speechineer/js": "0.7.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.28",
+    "react": "^18.3.1",
+    "tsup": "^8",
+    "typescript": "^5.9.3"
+  }
+}

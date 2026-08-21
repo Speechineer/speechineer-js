@@ -1,0 +1,35 @@
+name: Bug report
+description: Something in the SDK does not behave as documented
+labels: [bug]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Package and version
+      placeholder: "@speechineer/react 0.7.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Framework / browser / bundler
+      placeholder: "React 18.3, Chrome 129, Vite 6"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The options you passed (without credentials), the sequence of calls, and the `state` / `error` you observed (`error.code` helps most).
+      render: ts
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed API keys, tokens and personal data from this report.
+          required: true

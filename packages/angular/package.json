@@ -1,0 +1,63 @@
+{
+  "name": "@speechineer/angular",
+  "version": "0.7.0",
+  "description": "Speechineer for Angular — provideSpeechineer() and one inject function per capability to fill forms by voice or from text, with signals.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "speechineer",
+    "speech-to-form",
+    "voice-input",
+    "ai-forms",
+    "angular",
+    "signals"
+  ],
+  "license": "Apache-2.0",
+  "author": "Aicendence GmbH",
+  "homepage": "https://github.com/speechineer/speechineer-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/speechineer/speechineer-js.git",
+    "directory": "packages/angular"
+  },
+  "bugs": {
+    "url": "https://github.com/speechineer/speechineer-js/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@speechineer/js": "0.7.0"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=17"
+  },
+  "devDependencies": {
+    "@angular/core": "^21.2.0",
+    "rxjs": "^7.8.1",
+    "tsup": "^8",
+    "typescript": "^5.9.3"
+  }
+}

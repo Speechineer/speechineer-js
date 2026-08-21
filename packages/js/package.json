@@ -1,0 +1,61 @@
+{
+  "name": "@speechineer/js",
+  "version": "0.7.0",
+  "description": "Speechineer for JavaScript — realtime speech-to-form sessions for any web app, framework-free.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "NOTICE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "format": "biome format",
+    "lint": "biome lint",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "speechineer",
+    "speech-to-form",
+    "voice-input",
+    "form-automation",
+    "ai-forms"
+  ],
+  "license": "Apache-2.0",
+  "author": "Aicendence GmbH",
+  "homepage": "https://github.com/speechineer/speechineer-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/speechineer/speechineer-js.git",
+    "directory": "packages/js"
+  },
+  "bugs": {
+    "url": "https://github.com/speechineer/speechineer-js/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "tsup": "^8",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

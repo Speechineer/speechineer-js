@@ -1,0 +1,67 @@
+{
+  "$comment": [
+    "Registry of the published SDK surfaces, read by the API-reference generator (the portal's",
+    "docs build) to render the versioned reference and its language / version pickers.",
+    "",
+    "ONE shared version for everything: `versionSource` names the package.json whose version",
+    "stamps ALL generated docs, and the single Changesets `fixed` group keeps every package on",
+    "that number. Same number = same surface; there are no per-language version lines.",
+    "",
+    "`core` is the shared reference — the client, the form definition, the callbacks, and the",
+    "state every package has in common, generated from packages/js/src/core.ts. It renders as a",
+    "tab beside each language's package. A package may name its `typedoc` options file",
+    "explicitly (default: `<dir>/typedoc.json`); `core` always uses `<dir>/typedoc.json`.",
+    "`id` values appear in doc URLs (/docs/api-reference/<language>/<version>/<package-or-core>)",
+    "and must stay stable once published. The id `core` is reserved."
+  ],
+  "versionSource": "packages/js/package.json",
+  "core": {
+    "id": "core",
+    "label": "Core",
+    "npm": "@speechineer/js",
+    "dir": "packages/js",
+    "summary": "The client, the form definition, the callbacks, and the session state every package shares."
+  },
+  "languages": [
+    {
+      "id": "javascript",
+      "label": "JavaScript",
+      "packages": [
+        {
+          "id": "js",
+          "label": "@speechineer/js",
+          "npm": "@speechineer/js",
+          "dir": "packages/js",
+          "typedoc": "packages/js/typedoc.javascript.json",
+          "summary": "The framework-free client and sessions."
+        }
+      ]
+    },
+    {
+      "id": "react",
+      "label": "React",
+      "packages": [
+        {
+          "id": "react",
+          "label": "@speechineer/react",
+          "npm": "@speechineer/react",
+          "dir": "packages/react",
+          "summary": "The provider and one hook per capability."
+        }
+      ]
+    },
+    {
+      "id": "angular",
+      "label": "Angular",
+      "packages": [
+        {
+          "id": "angular",
+          "label": "@speechineer/angular",
+          "npm": "@speechineer/angular",
+          "dir": "packages/angular",
+          "summary": "provideSpeechineer() and one inject function per capability, with signals."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // TypeDoc-only: resolve @speechineer/js to its SOURCE so TSDoc reaches the generated
+    // reference — tsup's dts bundling strips comments from dist/index.d.ts.
+    "paths": {
+      "@speechineer/js": ["../js/src/index.ts"]
+    },
+    "rootDir": ".."
+  }
+}
