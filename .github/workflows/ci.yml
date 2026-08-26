@@ -17,7 +17,7 @@ jobs:
     name: Build · typecheck · lint · test · package checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # `changeset status` compares against the base branch
       - uses: actions/setup-node@v4
