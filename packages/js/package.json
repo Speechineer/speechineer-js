@@ -43,14 +43,14 @@
   ],
   "license": "Apache-2.0",
   "author": "Aicendence GmbH",
-  "homepage": "https://github.com/speechineer/speechineer-js#readme",
+  "homepage": "https://github.com/Speechineer/speechineer-js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/speechineer/speechineer-js.git",
+    "url": "git+https://github.com/Speechineer/speechineer-js.git",
     "directory": "packages/js"
   },
   "bugs": {
-    "url": "https://github.com/speechineer/speechineer-js/issues"
+    "url": "https://github.com/Speechineer/speechineer-js/issues"
   },
   "publishConfig": {
     "access": "public",

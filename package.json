@@ -29,7 +29,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/speechineer/speechineer-js.git"
+    "url": "git+https://github.com/Speechineer/speechineer-js.git"
   },
   "engines": {
     "node": ">=20"
