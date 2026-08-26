@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/angular",
-  "version": "0.7.0",
-  "description": "Build voice-based documentation into your Angular app \u2014 provideSpeechineer() and one inject function per capability, with state as signals.",
+  "version": "0.7.1",
+  "description": "Build voice-based documentation into your Angular app — provideSpeechineer() and one inject function per capability, with state as signals.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -53,7 +53,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@speechineer/js": "0.7.0"
+    "@speechineer/js": "0.7.1"
   },
   "peerDependencies": {
     "@angular/core": ">=17"

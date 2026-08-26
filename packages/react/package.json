@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/react",
-  "version": "0.7.0",
-  "description": "Build voice-based documentation into your React app \u2014 a provider and one hook per capability turn speech or text into structured, typed values.",
+  "version": "0.7.1",
+  "description": "Build voice-based documentation into your React app — a provider and one hook per capability turn speech or text into structured, typed values.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -53,7 +53,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@speechineer/js": "0.7.0"
+    "@speechineer/js": "0.7.1"
   },
   "peerDependencies": {
     "react": ">=18"
