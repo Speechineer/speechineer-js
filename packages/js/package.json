@@ -1,7 +1,7 @@
 {
   "name": "@speechineer/js",
-  "version": "0.7.0",
-  "description": "Build voice-based documentation into any web app \u2014 spoken or typed input becomes structured, typed values in real time. Framework-free.",
+  "version": "0.7.1",
+  "description": "Build voice-based documentation into any web app — spoken or typed input becomes structured, typed values in real time. Framework-free.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
