@@ -53,10 +53,18 @@ above when the freeze happens.
 
 ## Cutting a version
 
-Releases are cut by the release workflow (`.github/workflows/release.yml`): every push to
-`develop` with pending changesets opens or updates a **"Version Packages"** pull request
-(one bump for the fixed group + the CHANGELOG entries). Merging that PR publishes the three
-packages to npm with provenance (trusted publishing) and creates the GitHub releases.
+Releases are cut in two steps by the release workflow (`.github/workflows/release.yml`),
+on two branches:
+
+1. **Version on `develop`.** Every push to `develop` with pending changesets opens or updates
+   a **"Version Packages"** pull request (one bump for the fixed group + the CHANGELOG
+   entries). Merging that PR lands the bump on `develop`. Nothing is published yet.
+2. **Publish on `production`.** The branches move as a ladder — `develop` → `staging` →
+   `production`, fast-forwards only — and **only a push to `production`** publishes every
+   not-yet-published version to npm with provenance (trusted publishing) and creates the
+   GitHub releases. A push to `production` with changesets still pending fails the workflow:
+   version on `develop` first, then promote.
+
 Never run `changeset version` (`npm run version-packages`) ad hoc on a feature branch.
 
 ## Adding a framework (Vue, Svelte, …)

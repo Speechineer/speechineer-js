@@ -1,17 +1,25 @@
 name: Release
 
-# On every push to develop: if changesets are pending, open/update the "Version Packages"
-# pull request; once that PR is merged (no pending changesets, unpublished versions), publish
-# the three packages to npm with provenance via trusted publishing — no npm token anywhere.
+# Two rungs, two jobs:
 #
-# One-time setup (maintainers): the first 0.7.0 publish is done manually (`npm login` +
-# `npm run release`), then each package gets this repository + workflow registered as its
+#   develop     — with changesets pending, open/update the "Version Packages" pull request
+#                 (one bump for the fixed group + the CHANGELOG entries). Merging it lands the
+#                 bump on develop. Nothing is published here.
+#   production  — publish every not-yet-published version to npm with provenance via trusted
+#                 publishing (no npm token anywhere) and create the GitHub releases. Only a
+#                 push to production publishes; it refuses if changesets are still pending
+#                 (version on develop first).
+#
+# production only ever receives staging, which only ever receives develop (fast-forwards).
+#
+# One-time setup (maintainers): the first 0.7.0 publish was done manually (`npm login` +
+# `npm run release`), then each package got this repository + workflow registered as its
 # Trusted Publisher on npmjs.com. Settings → Actions must allow GitHub Actions to create
 # pull requests.
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, production]
 
 permissions:
   contents: write # version PR, tags, GitHub releases
@@ -23,8 +31,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Version or publish
+  version:
+    name: Version PR (develop)
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Open or update the release PR
+        uses: changesets/action@v1
+        with:
+          version: npm run version-packages
+          commit: "chore: version packages"
+          title: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish to npm (production)
+    if: github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -38,14 +69,18 @@ jobs:
       - name: Use an npm that supports trusted publishing (>= 11.5.1)
         run: npm install -g npm@latest && npm --version
       - run: npm ci
-      - run: npm run build
-      - name: Create the release PR or publish
+      - name: Refuse to publish with changesets still pending
+        run: |
+          pending=$(ls .changeset/*.md 2>/dev/null | grep -v '/README.md$' || true)
+          if [ -n "$pending" ]; then
+            echo "::error::Pending changesets on production — merge the Version Packages PR on develop and promote again:"
+            echo "$pending"
+            exit 1
+          fi
+      - name: Publish the unpublished versions (npm run release = build + changeset publish)
         uses: changesets/action@v1
         with:
-          version: npm run version-packages
           publish: npm run release
-          commit: "chore: version packages"
-          title: "chore: version packages"
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
