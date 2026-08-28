@@ -198,6 +198,106 @@ describe('connections mirror the sockets', () => {
   });
 });
 
+describe('restart re-seeds the service', () => {
+  // What the app holds only ever crosses the wire on create and get, so a restart that
+  // re-attached silently left everything a user typed while stopped stranded in the browser.
+  // These pin that every route out of a restart carries the `state` scope instead.
+
+  it('start() after stop() re-seeds the live session through get, with no second create', async () => {
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+    recorder.finishStop();
+
+    await session.start();
+
+    expect(params.getWorkflow).toHaveBeenCalledWith('sess-1');
+    expect(params.createWorkflow).toHaveBeenCalledTimes(1);
+    expect(session.getState()).toMatchObject({ status: 'active', sessionId: 'sess-1' });
+  });
+
+  it('re-seeding the same session is not announced as a new one', async () => {
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+    recorder.finishStop();
+
+    await session.start();
+
+    // The id did not change, so nothing was started — announcing it would make every play
+    // look like a new session to anyone counting them.
+    expect(params.onSessionStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('a session archived while stopped is rebuilt through create with the old id', async () => {
+    const getWorkflow = vi.fn().mockRejectedValue(new WorkflowNotFoundError());
+    const createWorkflow = vi.fn().mockResolvedValueOnce(answer('sess-1')).mockResolvedValueOnce(answer('sess-2'));
+    const { session, params } = speechToForm({ getWorkflow, createWorkflow });
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+    recorder.finishStop();
+
+    await session.start();
+
+    expect(createWorkflow).toHaveBeenNthCalledWith(2, 'sess-1');
+    expect(session.getState()).toMatchObject({ status: 'active', sessionId: 'sess-2' });
+    // A new id really is a new session, so this one IS announced.
+    expect(params.onSessionStart).toHaveBeenCalledTimes(2);
+  });
+
+  it('end() while the re-seed is in flight does not resurrect the session', async () => {
+    let releaseGet: (a: ReturnType<typeof answer>) => void = () => {};
+    const getWorkflow = vi.fn(() => new Promise<ReturnType<typeof answer>>((resolve) => {
+      releaseGet = resolve;
+    }));
+    const { session } = speechToForm({ getWorkflow });
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+    recorder.finishStop();
+
+    const restarting = session.start();
+    await session.end();
+    releaseGet(answer('sess-1'));
+    await restarting;
+    await flush();
+
+    // The restart now awaits the network, so a cancel can land mid-flight; adopting what
+    // came back afterwards would undo the end the user just asked for.
+    expect(session.getState().status).toBe('idle');
+  });
+
+  it('a session minted while the user was cancelling is deleted, not left orphaned', async () => {
+    let releaseCreate: (a: ReturnType<typeof answer>) => void = () => {};
+    const getWorkflow = vi.fn().mockRejectedValue(new WorkflowNotFoundError());
+    const createWorkflow = vi
+      .fn()
+      .mockResolvedValueOnce(answer('sess-1'))
+      .mockImplementationOnce(() => new Promise<ReturnType<typeof answer>>((resolve) => {
+        releaseCreate = resolve;
+      }));
+    const { session, params } = speechToForm({ getWorkflow, createWorkflow });
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+    recorder.finishStop();
+
+    const restarting = session.start();
+    await flush(); // let the get reject so the create is the call in flight
+    await session.end();
+    releaseCreate(answer('sess-2'));
+    await restarting;
+    await flush();
+
+    // Nothing references sess-2, so without this it would sit service-side burning quota
+    // until the idle reaper collected it.
+    expect(params.deleteWorkflow).toHaveBeenCalledWith(expect.objectContaining({ session_id: 'sess-2' }));
+  });
+});
+
 describe('transcript', () => {
   it('transcript: true adds the transcript connection; snapshots land in state.transcript and reach onTranscript', async () => {
     const { session, params } = speechToForm({ transcript: true });

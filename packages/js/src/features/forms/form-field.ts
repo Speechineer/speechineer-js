@@ -131,3 +131,48 @@ export const FormField: FieldFactory = {
   multiselect: (id, prompt, options, appendOptionsToPrompt) =>
     withOptions(id, 'multiselect', prompt, options, appendOptionsToPrompt),
 };
+
+/**
+ * The factory surface for configuring a workspace form's code-defined fields. Only the three
+ * types that take a configuration appear here — the rest have nothing for code to supply.
+ *
+ * @group Fields
+ */
+export interface FieldConfigFactory {
+  /** Ranged numeric field; `range` is `[min, max]` with `min < max`. */
+  slider(id: string, range: [number, number]): FieldSpec;
+  /** Single-choice; `options` must be non-empty. */
+  select(id: string, options: string[], appendOptionsToPrompt?: boolean): FieldSpec;
+  /** Multi-choice; `options` must be non-empty. */
+  multiselect(id: string, options: string[], appendOptionsToPrompt?: boolean): FieldSpec;
+}
+
+/**
+ * Configure the fields your workspace form marks as set by your code — a choice field whose
+ * options come from your own data, for example. Pass the results as the form's `fields`.
+ *
+ * Same validation as `FormField`, without the prompt: what to extract is already written in
+ * your workspace, so only the field id and the configuration come from here.
+ *
+ * @example
+ * ```ts
+ * import { FormFieldConfig } from "@speechineer/js"; // also exported by @speechineer/react and @speechineer/angular
+ *
+ * const form = {
+ *   source: "workspace",
+ *   key: "intake",
+ *   version: "1",
+ *   language: "en",
+ *   fields: [FormFieldConfig.select("species", await loadSpeciesFromMyDatabase())],
+ * } as const;
+ * ```
+ *
+ * @group Fields
+ */
+export const FormFieldConfig: FieldConfigFactory = {
+  slider: (id, range) => FormField.slider(id, '', range),
+  select: (id, options, appendOptionsToPrompt) =>
+    FormField.select(id, '', options, appendOptionsToPrompt),
+  multiselect: (id, options, appendOptionsToPrompt) =>
+    FormField.multiselect(id, '', options, appendOptionsToPrompt),
+};

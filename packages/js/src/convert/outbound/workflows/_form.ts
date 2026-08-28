@@ -1,9 +1,10 @@
 /**
  * Shared scope assembly for the form capabilities' create / get requests. `form.source`
- * decides what the `feature` / `workflow` scopes carry: an inline form ships its fields,
- * prompts and model pins; a workspace form ships its identity only (the portal resolves
- * the rest). `spokenLanguage` fans out to both `feature.spoken_language` (the portal reads
- * it as a resolve input) and `state.transcription_language` (the service reads it at
+ * decides what the `feature` / `workflow` scopes carry: an inline form ships its `fields`,
+ * prompts and model pins; a workspace form ships its identity, plus `fieldConfigs` when it
+ * fills slots the workspace marked as code-defined. Both field lists leave through the same
+ * `feature.fields` key. `spokenLanguage` fans out to both `feature.spoken_language` (the portal
+ * reads it as a resolve input) and `state.transcription_language` (the service reads it at
  * runtime) — the portal never echoes it back, so the service needs it sent directly.
  *
  * @internal
@@ -43,7 +44,14 @@ export function toFeatureScope(
     form_version_key: form.version,
     form_config_language: form.language,
     ...(spokenLanguage ? { spoken_language: spokenLanguage } : {}),
-    ...(isInlineForm(form) ? { fields: form.fields.map(toSdkFieldSpec) } : {}),
+    // Both sources land in the same wire slot but mean different things, which is why they are
+    // named apart on the way in: an inline form's `fields` IS the definition, a workspace
+    // form's `fieldConfigs` only fills the slots the workspace left open for code.
+    ...(isInlineForm(form)
+      ? { fields: form.fields.map(toSdkFieldSpec) }
+      : form.fieldConfigs?.length
+        ? { fields: form.fieldConfigs.map(toSdkFieldSpec) }
+        : {}),
     ...(prompts && Object.keys(prompts).length > 0 ? { system_prompts: prompts } : {}),
   };
 }

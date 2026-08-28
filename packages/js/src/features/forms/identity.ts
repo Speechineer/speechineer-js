@@ -34,14 +34,24 @@ export interface FormIdentity {
 }
 
 /**
- * A form configured in Speechineer. Your code only names it; the fields, prompts,
- * and models come from your workspace — change them there without shipping a release.
+ * A form configured in Speechineer. Your code names it, and the fields, prompts and models
+ * come from your workspace — change them there without shipping a release. Individual fields
+ * can be marked in your workspace as set by code, and those arrive through `fieldConfigs`.
  *
  * @group Forms
  */
 export interface WorkspaceForm extends FormIdentity {
   /** The definition lives in your Speechineer workspace. */
   source: 'workspace';
+  /**
+   * Configuration for the fields your form marks as set by your code — a choice field whose
+   * options come from your own data, for example. Build each one with `FormFieldConfig`,
+   * giving it the same field id it has in your workspace.
+   *
+   * Only the marked fields are read from here, and one of them missing stops the session from
+   * starting. Every other field keeps the definition it has in your workspace.
+   */
+  fieldConfigs?: FieldSpec[];
 }
 
 /**

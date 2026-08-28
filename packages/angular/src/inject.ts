@@ -5,7 +5,7 @@
  * exposes its state as signals, and disposes it with the injector (`DestroyRef`).
  */
 
-import { computed, DestroyRef, inject, type Signal, signal } from '@angular/core';
+import { computed, DestroyRef, effect, inject, type Signal, signal } from '@angular/core';
 import type {
   SessionState,
   SpeechineerClient,
@@ -72,6 +72,24 @@ export function bindSession<S extends Bindable>(session: S): S & SessionSignals 
   return Object.assign(session, signals);
 }
 
+/** Read an options source: a plain object as-is, a reactive one by calling it. @internal */
+function readOptions<O>(source: O | (() => O)): O {
+  return typeof source === 'function' ? (source as () => O)() : source;
+}
+
+/**
+ * Re-apply a reactive options source to the session whenever the signals it reads change.
+ *
+ * A plain object is left alone — there is nothing to track. The effect registers against the
+ * current injector, so it is torn down with the component like the subscription in
+ * `bindSession`.
+ * @internal
+ */
+function trackOptions<O>(session: { setOptions: (next: O) => void }, source: O | (() => O)): void {
+  if (typeof source !== 'function') return;
+  effect(() => session.setOptions((source as () => O)()));
+}
+
 /**
  * The options of `injectSpeechToForm`: the session options every framework shares, plus
  * an optional `client` to use instead of the provided one.
@@ -95,6 +113,12 @@ export type InjectSpeechToFormResult = SpeechToFormSession & SessionSignals;
  * Fill a form by voice. Call it in an injection context; the session is released
  * with the component. Render from the signals (`isListening()`, `values()`, …) and
  * drive it with `start()` / `stop()` / `end()`.
+ *
+ * Pass a plain object when the options never change. Pass a **function** when they depend on
+ * signals: it is re-read whenever those signals change, so callbacks and `initialValues`
+ * follow the component instead of staying at the values they had when the session was
+ * created. That matters for `initialValues` in particular — a session that reconnects sends
+ * the values the form holds at that moment, not the ones it started with.
  *
  * @example
  * ```ts
@@ -120,8 +144,13 @@ export type InjectSpeechToFormResult = SpeechToFormSession & SessionSignals;
  *
  * @group Capability: Speech to form
  */
-export function injectSpeechToForm(options: InjectSpeechToFormOptions): InjectSpeechToFormResult {
-  return bindSession(resolveClient(options.client).speechToForm(options));
+export function injectSpeechToForm(
+  options: InjectSpeechToFormOptions | (() => InjectSpeechToFormOptions),
+): InjectSpeechToFormResult {
+  const initial = readOptions(options);
+  const session = resolveClient(initial.client).speechToForm(initial);
+  trackOptions(session, options);
+  return bindSession(session);
 }
 
 /**
@@ -147,8 +176,16 @@ export type InjectTextToFormResult = TextToFormSession & SessionSignals;
  * Extract field values from text. Call it in an injection context; `extract(text)`
  * opens the session on first use and merges every result into `values()`.
  *
+ * As with `injectSpeechToForm`, pass a function instead of a plain object when the options
+ * depend on signals and should follow the component.
+ *
  * @group Capability: Text to form
  */
-export function injectTextToForm(options: InjectTextToFormOptions): InjectTextToFormResult {
-  return bindSession(resolveClient(options.client).textToForm(options));
+export function injectTextToForm(
+  options: InjectTextToFormOptions | (() => InjectTextToFormOptions),
+): InjectTextToFormResult {
+  const initial = readOptions(options);
+  const session = resolveClient(initial.client).textToForm(initial);
+  trackOptions(session, options);
+  return bindSession(session);
 }

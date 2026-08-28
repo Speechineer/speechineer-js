@@ -5,6 +5,6 @@
  */
 
 export type { FieldConfig, FieldSpec, FieldType, OptionsFieldConfig, RangeFieldConfig } from './fields.js';
-export type { FieldFactory } from './form-field.js';
-export { FIELD_TYPES, FormField } from './form-field.js';
+export type { FieldConfigFactory, FieldFactory } from './form-field.js';
+export { FIELD_TYPES, FormField, FormFieldConfig } from './form-field.js';
 export type { FormDefinition, FormIdentity, InlineForm, Models, Prompts, WorkspaceForm } from './identity.js';

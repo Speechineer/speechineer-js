@@ -169,11 +169,42 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
       const existing = answer;
       if (existing) {
         // Reconnect after a stop, a lost main connection, or a failed attach (e.g. a denied
-        // microphone): re-attach to the same session (a live-miss closes with 4404 → resume).
+        // microphone). The service is re-seeded FIRST, through the same chain used on an
+        // involuntary loss: `get` while the session is still live, `create` with the old id
+        // once it has been archived, a fresh `create` when it is gone entirely. All three
+        // carry the `state` scope, so whatever the app holds now — values a user typed into
+        // the form while it was stopped — reaches the service before the next extraction,
+        // and it does so whether or not the session survived the pause.
+        //
+        // Sending a blank payload is not destructive: the service keeps what it already
+        // extracted unless the client actually carries a value. Re-attaching without this
+        // call was silent, so anything entered between a stop and the next start was lost.
         notFoundHandled = false;
         update((s) => withStatus(withError(s, null), 'active'));
-        setupLifeline(existing);
-        await opts.onSessionReady?.(existing);
+        // This branch now awaits a network round trip, so end()/dispose() can land while it
+        // is in flight — the same race the create path below already guards.
+        const gen = generation;
+        const refreshed = await resumeOrCreate(existing.session_id);
+        if (gen !== generation) {
+          // Cancelled meanwhile: do not resurrect the session, and do not leave a new one
+          // orphaned. An unchanged id was already deleted by the end() that cancelled us.
+          if (refreshed.session_id !== existing.session_id) {
+            void opts.deleteWorkflowFn(refreshed).catch(() => {});
+          }
+          return;
+        }
+        if (refreshed.session_id === existing.session_id) {
+          // The same live session, now re-seeded: re-attach WITHOUT announcing a new start —
+          // `activate` would fire `onSessionStart`, and this is not a new session.
+          answer = refreshed;
+          setupLifeline(refreshed);
+          await opts.onSessionReady?.(refreshed);
+        } else {
+          // A different id came back, so this genuinely is a new session — announce it. (A
+          // resume normally returns the SAME id, since the service reuses the session; a new
+          // one means it was gone entirely and a fresh session was created.)
+          await activate(refreshed);
+        }
         return;
       }
       update((s) => withStatus(withError(s, null), 'starting'));

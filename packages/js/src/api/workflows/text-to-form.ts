@@ -21,7 +21,7 @@ const R = ROUTES.textToForm;
 
 /**
  * Create a text-to-form workflow. `inline` picks the resolve route (`create-standalone` for a
- * code-defined form, `create-portal` for a workspace form). A `session_id` on the request is a
+ * standalone form, `create-portal` for a workspace form). A `session_id` on the request is a
  * resume target — the service re-resolves the archived session and mints a **new** id.
  */
 export function createTextToForm(

@@ -55,6 +55,7 @@ export type {
   ErrorPhase,
   EventLevel,
   FieldConfig,
+  FieldConfigFactory,
   FieldFactory,
   FieldSpec,
   FieldType,
@@ -76,4 +77,11 @@ export type {
   TranscriptCallbacks,
   WorkspaceForm,
 } from './index.js';
-export { createClient, DEFAULT_BASE_URL, FIELD_TYPES, FormField, SpeechineerError } from './index.js';
+export {
+  createClient,
+  DEFAULT_BASE_URL,
+  FIELD_TYPES,
+  FormField,
+  FormFieldConfig,
+  SpeechineerError,
+} from './index.js';

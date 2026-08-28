@@ -9,7 +9,7 @@ import { toSdkFieldSpec, toSdkFieldValues, toSdkModels, toSdkPrompts } from '../
 import { toSpeechToFormGetRequestSdk, toSpeechToFormResolveRequestSdk } from '../src/convert/outbound/workflows/speech-to-form.js';
 import { toSpeechToFormWithTranscriptionResolveRequestSdk } from '../src/convert/outbound/workflows/speech-to-form-with-transcription.js';
 import { toTextToFormResolveRequestSdk } from '../src/convert/outbound/workflows/text-to-form.js';
-import { FormField } from '../src/features/forms/form-field.js';
+import { FormField, FormFieldConfig } from '../src/features/forms/form-field.js';
 
 const workspace = { source: 'workspace', key: 'intake', version: '1', language: 'en' } as const;
 const inline = {
@@ -31,6 +31,28 @@ describe('toSpeechToFormResolveRequestSdk', () => {
       feature: { form_key: 'intake', form_version_key: '1', form_config_language: 'en' },
       state: {},
     });
+  });
+
+  it('workspace form: fieldConfigs reach the wire as feature.fields', () => {
+    const req = toSpeechToFormResolveRequestSdk(
+      { form: { ...workspace, fieldConfigs: [FormFieldConfig.select('species', ['Dog', 'Cat'])] } },
+      'AUTH',
+    );
+    expect(req.feature).toEqual({
+      form_key: 'intake',
+      form_version_key: '1',
+      form_config_language: 'en',
+      fields: [
+        {
+          field_id: 'species',
+          prompt: '',
+          type: 'select',
+          field_configuration: { kind: 'options', options: ['Dog', 'Cat'] },
+        },
+      ],
+    });
+    // Still a workspace form: no model pins ride along with it.
+    expect(req.workflow).toEqual({ workflow_key: 'speech_to_form' });
   });
 
   it('inline form: fields converted, prompts and models mapped to the service slot keys', () => {

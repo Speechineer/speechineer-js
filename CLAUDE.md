@@ -99,7 +99,10 @@ maps them onto the wire slot names.
 
 `form.source: 'workspace' | 'inline'` (`features/forms/identity.ts`) decides the create route
 (`create-portal` vs `create-standalone`) and what the `feature` / `workflow` scopes carry. An
-inline form ships its `fields`, `prompts`, `models`; a workspace form ships identity only.
+inline form ships its `fields`, `prompts`, `models`; a workspace form ships identity, plus
+`fieldConfigs` when it fills the field slots the workspace marked as code-defined. The two
+field lists are named apart for the developer (one *is* the definition, the other only fills
+slots) and converge on the same `feature.fields` wire key.
 The words *portal* / *standalone* belong to the wire: they appear in those route segments and
 in the internal `inline` boolean, never in a public name.
 
@@ -131,7 +134,8 @@ packages/js/src/
                            callbacks, event) + workflows/ (one file per capability: options + session types).
 
   features/forms/          The forms vocabulary: identity (FormDefinition = WorkspaceForm | InlineForm, Prompts,
-                           Models), fields (FieldSpec, FieldConfig), form-field (FormField factory, FIELD_TYPES).
+                           Models), fields (FieldSpec, FieldConfig), form-field (FormField + FormFieldConfig
+                           factories, FIELD_TYPES).
 
   session/                 The FRAMEWORK-AGNOSTIC session.
     state.ts               SessionState + the immutable updaters + finalize() (derived flags).
