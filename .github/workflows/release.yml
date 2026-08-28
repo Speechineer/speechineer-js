@@ -45,7 +45,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Open or update the release PR
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           version: npm run version-packages
           commit: "chore: version packages"
@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
       - name: Publish the unpublished versions (npm run release = build + changeset publish)
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           publish: npm run release
           createGithubReleases: true
