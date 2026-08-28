@@ -19,10 +19,10 @@
     "release": "npm run build && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
+    "@changesets/cli": "^3.0.1",
     "typedoc": "^0.28.0",
     "typedoc-plugin-markdown": "^4.0.0",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "publint": "^0.3.12",
     "@arethetypeswrong/cli": "^0.18.2"
   },
