@@ -15,22 +15,25 @@ import type { LogVerbosity } from '../../sdk/common/lifeline.js';
 export type EventLevel = LogVerbosity;
 
 /**
- * One status event from a running session, delivered to `onEvent`. Events are
- * informational — progress, warnings, and failures alike — and are useful for logging
- * or a live status display. Failures also reach you as a typed `SpeechineerError`
- * through `onError`, so you rarely need to branch on events yourself.
+ * One status event from a running session, delivered to `onEvent`.
+ *
+ * Events are **progress**, useful for logging or a live status display: a connection
+ * re-establishing itself, a recording gesture, a connection Speechineer refused. Anything
+ * that *ends* the session is not an event at all — it reaches you as a typed
+ * `SpeechineerError` through `onError` and `state.error`, so you never have to inspect an
+ * event to find out whether the session is still alive.
  *
  * @group Events and errors
  */
 export interface SessionEvent {
   /** What happened, as a stable identifier you can branch on. */
-  type: string;
+  event: string;
   /** How important this event is — filter your logging with it. */
   level: EventLevel;
   /** Which part of the session reported it. */
   source: string;
-  /** Details that belong to this event type; the shape depends on `type`. */
-  payload: Record<string, unknown>;
+  /** Details belonging to this event; the shape depends on `event`. */
+  data: Record<string, unknown>;
   /** The session this event belongs to. */
   sessionId: string;
   /** ISO-8601 UTC timestamp of emission. */

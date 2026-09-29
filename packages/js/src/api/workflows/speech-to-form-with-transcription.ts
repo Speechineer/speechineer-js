@@ -26,7 +26,7 @@ export function createSpeechToFormWithTranscription(
   return postForData<SpeechToFormWithTranscriptionResolveResponseSdk>(baseUrl, `${R.root}/${endpoint}`, request);
 }
 
-/** Fetch a **live** workflow (auth-less); a live-miss 404s ({@link WorkflowNotFoundError}). */
+/** Fetch a **live** workflow (auth-less); a live-miss 404s (a `SESSION_NOT_FOUND` error). */
 export function getSpeechToFormWithTranscription(
   baseUrl: string,
   request: SpeechToFormWithTranscriptionGetRequestSdk,

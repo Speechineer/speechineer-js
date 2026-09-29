@@ -11,7 +11,7 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
 } from '@angular/core';
-import { type ClientOptions, createClient, type SpeechineerClient, SpeechineerError } from '@speechineer/js';
+import { type ClientOptions, createClient, sdkError, type SpeechineerClient } from '@speechineer/js';
 
 /** The injection token the client is registered under. @internal */
 export const SPEECHINEER_CLIENT = new InjectionToken<SpeechineerClient>('SPEECHINEER_CLIENT');
@@ -46,10 +46,10 @@ export function provideSpeechineer(clientOrOptions: SpeechineerClient | ClientOp
 export function resolveClient(override?: SpeechineerClient): SpeechineerClient {
   const client = override ?? inject(SPEECHINEER_CLIENT, { optional: true });
   if (!client) {
-    throw new SpeechineerError(
-      'No Speechineer client: add provideSpeechineer(...) to your application providers or pass `client`.',
-      { code: 'NO_CLIENT', phase: 'start', recoverable: false },
-    );
+    throw sdkError('NO_CLIENT', {
+      message:
+        'No Speechineer client: add provideSpeechineer(...) to your application providers or pass `client`.',
+    });
   }
   return client;
 }

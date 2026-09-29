@@ -5,7 +5,7 @@
  * (several workspaces in one app, tests).
  */
 
-import { type ClientOptions, createClient, type SpeechineerClient, SpeechineerError } from '@speechineer/js';
+import { type ClientOptions, createClient, sdkError, type SpeechineerClient } from '@speechineer/js';
 import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
 const SpeechineerContext = createContext<SpeechineerClient | null>(null);
@@ -63,10 +63,10 @@ export function useClient(override?: SpeechineerClient): SpeechineerClient {
   const fromContext = useContext(SpeechineerContext);
   const client = override ?? fromContext;
   if (!client) {
-    throw new SpeechineerError(
-      'No Speechineer client: wrap your app in <SpeechineerProvider> or pass `client` to the hook.',
-      { code: 'NO_CLIENT', phase: 'start', recoverable: false },
-    );
+    throw sdkError('NO_CLIENT', {
+      message:
+        'No Speechineer client: wrap your app in <SpeechineerProvider> or pass `client` to the hook.',
+    });
   }
   return client;
 }

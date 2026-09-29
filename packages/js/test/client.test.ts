@@ -6,7 +6,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_BASE_URL } from '../src/constants.js';
-import { SpeechineerError } from '../src/errors.js';
+import { SpeechineerError } from '../src/errors/index.js';
 import { answer, decodeJwt, installFakeRecorder, installFakeWebSocket } from './fakes.js';
 
 // The fake recorder must be registered BEFORE the client module graph (→ channels → recorder) loads.
@@ -33,9 +33,12 @@ describe('createClient', () => {
       expect(await client.resolveAuth()).toBe('t1');
     });
 
-    it('rejects with AUTH_REQUIRED when the provider returns nothing', async () => {
+    it('rejects with NO_AUTH when the provider returns nothing', async () => {
       const client = createClient({ token: () => '' });
-      await expect(client.resolveAuth()).rejects.toMatchObject({ code: 'AUTH_REQUIRED' });
+      // NO_AUTH, not AUTH_REQUIRED: this is the app's own wiring, caught before anything is
+      // sent. AUTH_REQUIRED is Speechineer refusing a credential that did travel — sharing one
+      // code meant a caller could not tell a missing config from a revoked key (D-41).
+      await expect(client.resolveAuth()).rejects.toMatchObject({ code: 'NO_AUTH', type: 'client' });
     });
 
     it('mints an unsigned token from apiKey + the client account', async () => {
@@ -50,9 +53,9 @@ describe('createClient', () => {
       expect(payload.account_key).toBe('kiosk-3');
     });
 
-    it('rejects with AUTH_REQUIRED without credentials and ACCOUNT_REQUIRED without an account', async () => {
-      await expect(createClient().resolveAuth()).rejects.toMatchObject({ code: 'AUTH_REQUIRED' });
-      await expect(createClient({ apiKey: 'k' }).resolveAuth()).rejects.toMatchObject({ code: 'ACCOUNT_REQUIRED' });
+    it('rejects with NO_AUTH without credentials and NO_ACCOUNT without an account', async () => {
+      await expect(createClient().resolveAuth()).rejects.toMatchObject({ code: 'NO_AUTH' });
+      await expect(createClient({ apiKey: 'k' }).resolveAuth()).rejects.toMatchObject({ code: 'NO_ACCOUNT' });
       const err = await createClient({ apiKey: 'k' })
         .resolveAuth()
         .catch((e: unknown) => e);
@@ -140,9 +143,11 @@ describe('sessions from the client (stubbed fetch)', () => {
     vi.stubGlobal('fetch', fetchMock);
     const onError = vi.fn();
     const session = createClient({ token: 't', baseUrl: 'http://x' }).speechToForm({ form: FORM, onError });
-    await session.start();
+    await expect(session.start()).rejects.toMatchObject({ code: 'FEATURE_NOT_AVAILABLE' });
     expect(session.getState().status).toBe('failed');
-    expect(session.getState().error).toMatchObject({ code: 'FEATURE_NOT_AVAILABLE', phase: 'start', recoverable: true });
+    // The service's own code reaches the app intact — this is the defect the ticket opened on:
+    // ~45 portal codes used to flatten into a bare "Request failed" with `code: null`.
+    expect(session.getState().error).toMatchObject({ code: 'FEATURE_NOT_AVAILABLE' });
     expect(onError).toHaveBeenCalledTimes(1);
   });
 
@@ -153,7 +158,7 @@ describe('sessions from the client (stubbed fetch)', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
     const session = createClient({ token: 't', baseUrl: 'http://x' }).speechToForm({ form: FORM });
-    await session.start();
-    expect(session.getState().error).toMatchObject({ code: 'NETWORK', recoverable: true });
+    await expect(session.start()).rejects.toMatchObject({ code: 'NETWORK' });
+    expect(session.getState().error).toMatchObject({ code: 'NETWORK', type: 'client' });
   });
 });

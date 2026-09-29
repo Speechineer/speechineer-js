@@ -10,7 +10,7 @@
 
 import { DEFAULT_BASE_URL } from './constants.js';
 import { mintUnsignedToken } from './convert/outbound/common/auth.js';
-import { SpeechineerError } from './errors.js';
+import { sdkError } from './errors/index.js';
 import { createSpeechToFormSession } from './session/workflows/speech-to-form.js';
 import { createTextToFormSession } from './session/workflows/text-to-form.js';
 import type { Account, ClientOptions } from './types/public/common/auth.js';
@@ -72,28 +72,25 @@ export function createClient(options: ClientOptions = {}): SpeechineerClient {
   const resolveAuth = async (account?: Account): Promise<string> => {
     if (options.token !== undefined) {
       const token = typeof options.token === 'function' ? await options.token() : options.token;
+      // NO_AUTH, not AUTH_REQUIRED (FLY-492 / D-41): the two are different failures that
+      // used to share a code. This one is the app's own wiring, caught before anything is
+      // sent; AUTH_REQUIRED is Speechineer's answer when a credential did travel and was
+      // refused. Sharing a code meant a caller could not tell "I forgot to configure the
+      // client" from "the key was revoked".
       if (!token) {
-        throw new SpeechineerError('The token provider returned no token.', {
-          code: 'AUTH_REQUIRED',
-          phase: 'start',
-          recoverable: true,
-        });
+        throw sdkError('NO_AUTH', { message: 'The token provider returned no token.' });
       }
       return token;
     }
     if (!options.apiKey) {
-      throw new SpeechineerError('Pass `apiKey` (with `account`) or `token` to createClient().', {
-        code: 'AUTH_REQUIRED',
-        phase: 'start',
-        recoverable: false,
-      });
+      throw sdkError('NO_AUTH');
     }
     const resolvedAccount = account ?? options.account;
     if (!resolvedAccount?.key) {
-      throw new SpeechineerError(
-        'An `account` (the end user this session is for) is required with `apiKey` — on the client or on the session.',
-        { code: 'ACCOUNT_REQUIRED', phase: 'start', recoverable: false },
-      );
+      throw sdkError('NO_ACCOUNT', {
+        message:
+          'An `account` (the end user this session is for) is required with `apiKey` — on the client or on the session.',
+      });
     }
     return mintUnsignedToken(options.apiKey, resolvedAccount);
   };

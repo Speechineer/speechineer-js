@@ -9,7 +9,8 @@
  * `onFieldUpdate`.
  *
  * It maps no close codes: client-disconnect, workflow-not-found (4404) and
- * crashes (4501-4505) are detected on the lifeline WebSocket alone.
+ * a session that ended is detected on the session connection (its `4xxx` close carries the
+ * category, and the message before it carries the failure itself).
  */
 
 import type { FormDataExtractionResult } from '../../types/sdk/common/form-data-extraction.js';

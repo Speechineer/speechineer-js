@@ -32,7 +32,7 @@ export function createSpeechToForm(
 
 /**
  * Fetch a **live** speech-to-form workflow (auth-less); the request's `state` re-seeds it. A
- * live-miss 404s ({@link WorkflowNotFoundError}) — the session then re-invokes create with the id.
+ * live-miss 404s (a `SESSION_NOT_FOUND` error) — the session then re-invokes create with the id.
  */
 export function getSpeechToForm(
   baseUrl: string,

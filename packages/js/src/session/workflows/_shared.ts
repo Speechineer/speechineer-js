@@ -8,7 +8,7 @@
  */
 
 import { fromSignal } from '../../convert/inbound/common/signal.js';
-import { SpeechineerError } from '../../errors.js';
+import { sdkError } from '../../errors/index.js';
 import type { FormValueCallbacks, SessionCallbacks, TranscriptCallbacks } from '../../types/public/common/callbacks.js';
 import type { ResolveResponseSdkBase } from '../../types/sdk/workflows/base.js';
 import type { WorkflowSessionCoreOptions } from '../base.js';
@@ -68,11 +68,7 @@ export function coreCallbackOptions<C extends ResolveResponseSdkBase>(
 /** Rejects when an action runs without a session. @internal */
 export function requireSessionId(id: string | null): string {
   if (!id) {
-    throw new SpeechineerError('No active session — call start() first.', {
-      code: 'NO_SESSION',
-      phase: 'action',
-      recoverable: true,
-    });
+    throw sdkError('NO_SESSION');
   }
   return id;
 }

@@ -59,7 +59,8 @@ function VisitNotes() {
 
   return (
     <>
-      <button type="button" onClick={isListening ? stop : () => void start()}>
+      {/* start() rejects when the session cannot open; the same error is in `error` too */}
+      <button type="button" onClick={isListening ? stop : () => void start().catch(() => {})}>
         {isListening ? "Stop" : "Dictate"}
       </button>
       {/* values is keyed by the field ids you configured */}
@@ -91,7 +92,7 @@ import { injectSpeechToForm } from "@speechineer/angular";
 @Component({
   selector: "visit-notes",
   template: `
-    <button type="button" (click)="dictation.isListening() ? dictation.stop() : dictation.start()">
+    <button type="button" (click)="dictation.isListening() ? dictation.stop() : dictate()">
       {{ dictation.isListening() ? "Stop" : "Dictate" }}
     </button>
     <input [value]="dictation.values()['diagnosis'] ?? ''" readonly />
@@ -101,6 +102,13 @@ export class VisitNotes {
   readonly dictation = injectSpeechToForm({
     form: { source: "workspace", key: "visit-notes", version: "1", language: "en" },
   });
+  });
+
+  // A template cannot catch, and start() rejects when the session cannot open — the same
+  // error is in dictation.error(), so this only keeps the rejection from going unhandled.
+  dictate() {
+    void this.dictation.start().catch(() => {});
+  }
 }
 ```
 
@@ -143,7 +151,10 @@ await session.end();                            // finish
 - **Callbacks** — optional: `onFieldValue`, `onTranscript`, `onSessionStart`, `onStateChange`,
   `onEvent`, `onError(SpeechineerError)` — everything they report is also in the state.
 - **Errors** — one `SpeechineerError` with a stable `code` (`MICROPHONE_DENIED`, `NETWORK`,
-  `NOT_FOUND`, …), the `phase` it happened in, and `recoverable`.
+  `SESSION_ENDED`, …), plus one subclass per category (`SpeechineerQuotaError`,
+  `SpeechineerSessionEndedError`, `SpeechineerValidationError`, …): `instanceof` handles a
+  whole family, `code` the exact cause. `start()` and `end()` reject with it as well as
+  reporting it to `onError` and `state.error`.
 
 ## Defining a step in code instead
 

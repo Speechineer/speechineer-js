@@ -44,15 +44,26 @@ export interface TextToFormSession {
   /**
    * Open the session ahead of time. Optional — `extract` opens it on first use; call
    * `start()` yourself to pay the connection cost before the user's first text.
+   *
+   * Rejects when the session could not be started, with the same `SpeechineerError`
+   * that reaches `onError` and `state.error`. Handle the promise — `await` it, or
+   * attach a `.catch()` — so a click handler leaves no unhandled rejection behind.
    */
   start: () => Promise<void>;
   /**
    * Extract field values from the given text. Resolves with the values recognized in
    * this call, keyed by field id; the same values are merged into `values`.
+   *
+   * Rejects with a `SpeechineerError` when the extraction fails — the same error also
+   * reaches `onError` and `state.error`.
    */
   extract: (text: string) => Promise<Readonly<Record<string, unknown>>>;
   /**
    * Finish the session and release everything. `values` return to `initialValues`.
+   *
+   * Rejects when Speechineer could not be told the session is over. Everything local
+   * has already been released by then, so a cleanup path — an unmount, a reset — may
+   * catch and ignore it; what it must not do is leave the rejection unhandled.
    */
   end: () => Promise<void>;
   /**

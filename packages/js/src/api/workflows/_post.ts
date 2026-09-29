@@ -5,43 +5,19 @@
  * is never read from module state. Lifecycle (create / get) posts a **flat** request and returns
  * the answer's `data` object (unwrapped from the response envelope `{ ok, data, meta }`); delete
  * expects 204; actions post a custom body and return a raw (non-enveloped) result.
+ *
+ * **Every failure here becomes a `SpeechineerError` built from the service's own `error`
+ * object.** There are no transport-specific error classes any more: a rejected request and a
+ * session that stopped mid-run reach the app as the same type, carrying the same code. The two
+ * classes that used to live here flattened ~45 service codes into two, which is how a wrong
+ * form version surfaced as a bare "Request failed" with `code: null`.
  */
 
+import { fromProblem } from '../../convert/inbound/common/problem.js';
+import type { SpeechineerError } from '../../errors/base.js';
+import { sdkError } from '../../errors/manifest.js';
 import type { SuccessEnvelope } from '../../types/sdk/common/envelope.js';
-
-/**
- * Thrown when a workflow request 404s: a create whose `session_id` resume target names no
- * archived session, a get on a workflow that is not live, or a delete / action on a workflow that
- * is gone. The session catches this to drive the get → create-on-404 resume chain.
- *
- * @internal
- */
-export class WorkflowNotFoundError extends Error {
-  constructor(message = 'Workflow not found') {
-    super(message);
-    this.name = 'WorkflowNotFoundError';
-  }
-}
-
-/**
- * A request the service rejected (non-2xx, non-404) or that never reached it (`status 0`,
- * `code 'NETWORK'`). `code` is the stable error code from the failure envelope when present.
- *
- * @internal
- */
-export class RequestError extends Error {
-  readonly status: number;
-  readonly code: string | null;
-  readonly cause?: unknown;
-
-  constructor(message: string, status: number, code: string | null, cause?: unknown) {
-    super(message);
-    this.name = 'RequestError';
-    this.status = status;
-    this.code = code;
-    if (cause !== undefined) this.cause = cause;
-  }
-}
+import type { ProblemSdk } from '../../types/sdk/common/problem.js';
 
 async function post(baseUrl: string, path: string, request: unknown): Promise<Response> {
   try {
@@ -52,45 +28,42 @@ async function post(baseUrl: string, path: string, request: unknown): Promise<Re
     });
   } catch (e) {
     const reason = e instanceof Error ? e.message : String(e);
-    throw new RequestError(`Could not reach Speechineer: ${reason}`, 0, 'NETWORK', e);
+    throw sdkError('NETWORK', { message: `Could not reach Speechineer: ${reason}`, cause: e });
   }
-}
-
-/** Best-effort error info: FailureEnvelope `error.message` + `error.code`, a plain `detail` field, else raw text. */
-async function errorInfo(res: Response): Promise<{ message: string; code: string | null }> {
-  const raw = await res.text().catch(() => '');
-  try {
-    const body = JSON.parse(raw) as {
-      error?: { message?: string; code?: string; error_code?: string };
-      detail?: unknown;
-    };
-    const code = body.error?.code ?? body.error?.error_code ?? null;
-    if (body.error?.message) return { message: body.error.message, code };
-    if (typeof body.detail === 'string') return { message: body.detail, code };
-  } catch {
-    /* not JSON — fall through to the raw text */
-  }
-  return { message: raw, code: null };
-}
-
-async function rejectWith(res: Response, what: string): Promise<never> {
-  const { message, code } = await errorInfo(res);
-  throw new RequestError(`${what} failed (${res.status})${message ? `: ${message}` : ''}`, res.status, code);
 }
 
 /**
- * POST a flat request to a create / get endpoint and return the answer's `data` object (unwrapped
- * from the response envelope). Throws {@link WorkflowNotFoundError} on 404 so the session can
- * resume; a {@link RequestError} on any other non-2xx.
+ * Read the failure the service sent: the envelope's `error` object, plus the request id from
+ * its `meta` so a caller can quote it.
+ *
+ * Falls back progressively — a body that is not the envelope, then one that is not JSON at all
+ * — because a proxy or a gateway can answer on the service's behalf, and failing to parse a
+ * failure must still produce one.
+ */
+async function failureFrom(res: Response): Promise<SpeechineerError> {
+  const raw = await res.text().catch(() => '');
+  try {
+    const body = JSON.parse(raw) as { error?: ProblemSdk; meta?: { request_id?: string } };
+    if (body.error?.code) {
+      return fromProblem(body.error, { requestId: body.meta?.request_id ?? null });
+    }
+  } catch {
+    /* not JSON — fall through */
+  }
+  return sdkError('REQUEST_FAILED', {
+    message: raw
+      ? `The request was rejected (${res.status}): ${raw}`
+      : `The request was rejected (${res.status}).`,
+  });
+}
+
+/**
+ * POST a flat request to a create / get endpoint and return the answer's `data` object
+ * (unwrapped from the response envelope).
  */
 export async function postForData<Data>(baseUrl: string, path: string, request: unknown): Promise<Data> {
   const res = await post(baseUrl, path, request);
-  if (res.status === 404) {
-    throw new WorkflowNotFoundError((await errorInfo(res)).message);
-  }
-  if (!res.ok) {
-    await rejectWith(res, 'Workflow request');
-  }
+  if (!res.ok) throw await failureFrom(res);
   const answer = (await res.json()) as SuccessEnvelope<Data>;
   return answer.data;
 }
@@ -98,23 +71,14 @@ export async function postForData<Data>(baseUrl: string, path: string, request: 
 /** POST a flat request to a delete endpoint (204 No Content). A 404 is tolerated (already gone). */
 export async function postForDelete(baseUrl: string, path: string, request: unknown): Promise<void> {
   const res = await post(baseUrl, path, request);
-  if (!res.ok && res.status !== 404) {
-    await rejectWith(res, 'Workflow delete');
-  }
+  if (!res.ok && res.status !== 404) throw await failureFrom(res);
 }
 
 /**
  * POST a custom action body and return its raw (non-enveloped) JSON result.
- * Throws {@link WorkflowNotFoundError} on 404; a {@link RequestError} on any other non-2xx
- * (e.g. 409 precondition unmet, 504 timeout).
  */
 export async function postForResult<Result>(baseUrl: string, path: string, request: unknown): Promise<Result> {
   const res = await post(baseUrl, path, request);
-  if (res.status === 404) {
-    throw new WorkflowNotFoundError((await errorInfo(res)).message);
-  }
-  if (!res.ok) {
-    await rejectWith(res, 'Workflow action');
-  }
+  if (!res.ok) throw await failureFrom(res);
   return (await res.json()) as Result;
 }

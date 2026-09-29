@@ -39,7 +39,8 @@ function VisitNotes() {
 
   return (
     <>
-      <button type="button" onClick={isListening ? stop : () => void start()}>
+      {/* start() rejects when the session cannot open; the same error is in `error` too */}
+      <button type="button" onClick={isListening ? stop : () => void start().catch(() => {})}>
         {isListening ? "Stop" : "Dictate"}
       </button>
       {/* values is keyed by the field ids you configured */}

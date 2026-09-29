@@ -10,7 +10,7 @@
  * recomputed by `finalize` on every update so that every state object is consistent.
  */
 
-import type { SpeechineerError } from '../errors.js';
+import type { SpeechineerError } from '../errors/index.js';
 
 /**
  * Where the session is in its life.

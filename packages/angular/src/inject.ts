@@ -128,7 +128,7 @@ export type InjectSpeechToFormResult = SpeechToFormSession & SessionSignals;
  * @Component({
  *   selector: "talk-to-form",
  *   template: `
- *     <button type="button" (click)="voice.isListening() ? voice.stop() : voice.start()">
+ *     <button type="button" (click)="voice.isListening() ? voice.stop() : talk()">
  *       {{ voice.isListening() ? "Stop" : "Talk" }}
  *     </button>
  *     <input [value]="voice.values()['patientName'] ?? ''" readonly />
@@ -139,6 +139,13 @@ export type InjectSpeechToFormResult = SpeechToFormSession & SessionSignals;
  *     form: { source: "inline", key: "patient-intake", version: "1", language: "en",
  *       fields: [FormField.text("patientName", "Extract the patient full name")] },
  *   });
+ *
+ *   // A template cannot catch, and `start()` rejects when the session cannot open — the
+ *   // same error is in `voice.error()`, so this only keeps the rejection from going
+ *   // unhandled.
+ *   talk() {
+ *     void this.voice.start().catch(() => {});
+ *   }
  * }
  * ```
  *

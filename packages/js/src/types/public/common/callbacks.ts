@@ -6,7 +6,7 @@
  * integrations (form libraries, logging), not as the only way to read results.
  */
 
-import type { SpeechineerError } from '../../../errors.js';
+import type { SpeechineerError } from '../../../errors/index.js';
 import type { SessionState } from '../../../session/state.js';
 import type { SessionEvent } from './event.js';
 
@@ -31,15 +31,19 @@ export interface SessionCallbacks {
    */
   onStateChange?: (state: SessionState) => void;
   /**
-   * Every status event Speechineer emits for this session — progress, warnings,
-   * and failures alike. Use it for logging or a live status display.
+   * Every status event Speechineer emits for this session — **progress only**: a
+   * connection re-establishing itself, a recording gesture, a connection Speechineer
+   * refused. Anything that *ends* the session is not an event at all and arrives
+   * through `onError` instead, so you never have to inspect an event to find out
+   * whether the session is still alive. Use this for logging or a live status display.
    */
   onEvent?: (event: SessionEvent) => void;
   /**
    * Something failed in a way you should handle: a rejected request, a denied
    * microphone permission, a lost connection, or a failure Speechineer reported
-   * while the session ran. Read `error.code` to branch and `error.recoverable`
-   * to decide whether to offer a retry.
+   * while the session ran. Branch on `error.code` for the exact cause, or on the
+   * error's class (`SpeechineerQuotaError`, `SpeechineerSessionEndedError`, …) to
+   * handle a whole family at once. `start()` and `end()` reject with the same error.
    */
   onError?: (error: SpeechineerError) => void;
 }

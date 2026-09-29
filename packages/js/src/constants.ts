@@ -59,33 +59,10 @@ export const ROUTES = {
   },
 } as const;
 
-/**
- * @internal
- */
-export const WORKFLOW_NOT_FOUND_CLOSE_CODE = 4404;
-
-/**
- * Crash close codes the service uses on the session connection (and on a late
- * audio/results connection to an already-crashed workflow). The typed
- * crash signal is delivered as a message *before* the close, so consumers
- * react via `onError`, not via these codes.
- *
- * @internal
- */
-export const CRASH_CLOSE_CODES = {
-  PROVIDER_CRASH: 4501,
-  ADAPTER_CRASH: 4502,
-  PRODUCER_CRASH: 4503,
-  CONSUMER_CRASH: 4504,
-  WORKFLOW_CRASH: 4505,
-} as const;
-
-/**
- * @internal
- */
-export function isCrashCloseCode(code: number): boolean {
-  return code >= 4501 && code <= 4505;
-}
+// Close codes are NOT constants here. They are derived from the failure's own category —
+// `closeCodeFor` / `isTerminalCloseCode` in `types/sdk/common/problem.ts`,
+// mirroring the service's own projection — so the catalogue of failures stays the only list
+// anyone maintains.
 
 /**
  * @internal

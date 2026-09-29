@@ -123,8 +123,11 @@ packages/js/src/
   index.ts                 The public barrel: createClient, DEFAULT_BASE_URL, SpeechineerError, FormField,
                            FIELD_TYPES, the public types. NOT api/, convert/, tools/, session/base (internal).
   client.ts                createClient / SpeechineerClient: baseUrl, resolveAuth, speechToForm(), textToForm().
-  constants.ts             DEFAULT_BASE_URL, ROUTES (every endpoint segment), WS close codes (4404, 4501-4505).
-  errors.ts                SpeechineerError (code / phase / recoverable), toSpeechineerError, fromCrashSignal.
+  constants.ts             DEFAULT_BASE_URL, ROUTES (every endpoint segment). Close codes are NOT here:
+                           they derive from the failure's category (`closeCodeFor` in types/sdk/common/problem.ts).
+  errors/                  base.ts (SpeechineerError: code / type / meta / details), categories.ts (one class
+                           per category), manifest.ts (SDK_ERRORS — the codes the SDK names itself),
+                           guards.ts, normalize.ts (toSpeechineerError), meta.ts (QuotaMeta), index.ts.
   core.ts, docs-entry.ts   TypeDoc entries (the shared Core reference, the JavaScript reference). Not built.
 
   types/
@@ -150,12 +153,14 @@ packages/js/src/
   convert/                 THE camel⇄snake boundary.
     outbound/common/       auth (mintUnsignedToken), field (toSdkFieldSpec, toSdkFieldValues, toSdkPrompts, toSdkModels)
     outbound/workflows/    _form.ts (the three scopes, switching on form.source) + one builder file per wire workflow
-    inbound/common/        signal (fromSignal → SessionEvent)
+    inbound/common/        signal (fromSignal → SessionEvent), problem (fromProblem → SpeechineerError),
+                           close-frame (fromCloseFrame → what a bare 4xxx close stands for)
     inbound/workflows/     text-to-form (fromFormDataResult → values record)
 
   api/                     Transport. No camelCase here — speaks the wire.
-    workflows/             REST lifecycle: _post.ts (postForData/Delete/Result, RequestError, WorkflowNotFoundError)
-                           + one file per wire workflow; every function takes `baseUrl` first.
+    workflows/             REST lifecycle: _post.ts (postForData/Delete/Result — every failure becomes a
+                           SpeechineerError from the service's own `error` object) + one file per wire
+                           workflow; every function takes `baseUrl` first.
     ws/                    WebSocket clients: audio, form-data, transcription, lifeline.
 
   tools/audio/             The mic capability: recorder (getUserMedia + AudioWorklet → audio socket) + worklet.
@@ -210,7 +215,7 @@ of a capability, with a lifecycle and connections), *connection* (`session` = th
 | Outbound create | `to<Workflow>ResolveRequestSdk(options, auth, resumeSessionId?)` | `convert/outbound/workflows/<wf>.ts` | `toSpeechToFormResolveRequestSdk` |
 | Outbound get | `to<Workflow>GetRequestSdk(options, sessionId)` | same | |
 | Outbound shared pieces | `to<Thing>` / `toSdk<Thing>` | `convert/outbound/common/` | `toSdkFieldSpec`, `toSdkPrompts`, `mintUnsignedToken` |
-| Inbound | `from<Thing>` | `convert/inbound/` | `fromSignal`, `fromFormDataResult` |
+| Inbound | `from<Thing>` | `convert/inbound/` | `fromSignal`, `fromProblem`, `fromCloseFrame`, `fromFormDataResult` |
 
 Direction verb is the law: **`to…` = camel → sdk (outbound)**, **`from…` = sdk → camel (inbound)**.
 The scopes are assembled by `_form.ts` helpers switching on `form.source`; a builder reads as one
@@ -276,9 +281,10 @@ useSpeechToForm(options) / injectSpeechToForm / client.speechToForm   → create
 ```
 form_data message (snake) ─▶ core.setFieldValue → state.values, then onFieldValue(fieldId, value)
 transcription snapshot    ─▶ core.setTranscript → state.transcript, then onTranscript(text)
-lifeline signal           ─▶ fromSignal → onEvent(SessionEvent)
-lifeline crash            ─▶ fromCrashSignal → state.error + onError(SpeechineerError, runtime, not recoverable)
-thrown errors             ─▶ toSpeechineerError(e, phase) → status failed + onError
+session signal (progress) ─▶ fromSignal  → onEvent(SessionEvent)
+session signal (terminal) ─▶ fromProblem → state.error + onError  ← `error` present IS the terminality
+4xxx close, no message    ─▶ fromCloseFrame → fromProblem → the same, for a connection opened too late
+thrown errors             ─▶ toSpeechineerError(e) → status failed + onError + the promise rejects
 ```
 
 Division of labor:

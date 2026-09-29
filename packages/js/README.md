@@ -36,7 +36,10 @@ session.subscribe((state) => {
   output.textContent = String(state.values.diagnosis ?? "");   // keyed by your field ids
 });
 
-button.onclick = () => (session.getState().isListening ? session.stop() : session.start());
+// start() rejects when the session cannot open; that error is also in state.error, so the
+// catch only keeps the rejection from going unhandled.
+button.onclick = () =>
+  session.getState().isListening ? session.stop() : void session.start().catch(() => {});
 ```
 
 **Text instead of speech:** `speechineer.textToForm({ form })` → `extract(text)` runs the same

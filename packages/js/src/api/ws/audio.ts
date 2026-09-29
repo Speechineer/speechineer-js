@@ -8,7 +8,7 @@
  * `../../tools/audio/recorder.ts`, which drives this client.
  *
  * Like the form-data plane, a drop here is quiet: client-disconnect,
- * workflow-not-found (4404) and crashes (4501-4505) are detected on the
+ * a session that is gone (4404) or has ended (any other `4xxx`) is detected on the
  * lifeline WebSocket alone, never here.
  */
 

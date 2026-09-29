@@ -35,7 +35,7 @@ import { injectSpeechToForm } from "@speechineer/angular";
 @Component({
   selector: "visit-notes",
   template: `
-    <button type="button" (click)="dictation.isListening() ? dictation.stop() : dictation.start()">
+    <button type="button" (click)="dictation.isListening() ? dictation.stop() : dictate()">
       {{ dictation.isListening() ? "Stop" : "Dictate" }}
     </button>
     <!-- values() is keyed by the field ids you configured -->
@@ -47,6 +47,13 @@ export class VisitNotes {
   readonly dictation = injectSpeechToForm({
     form: { source: "workspace", key: "visit-notes", version: "1", language: "en" },
   });
+  });
+
+  // A template cannot catch, and start() rejects when the session cannot open — the same
+  // error is in dictation.error(), so this only keeps the rejection from going unhandled.
+  dictate() {
+    void this.dictation.start().catch(() => {});
+  }
 }
 ```
 

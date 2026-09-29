@@ -6,8 +6,8 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { WorkflowNotFoundError } from '../src/api/workflows/_post.js';
-import { SpeechineerError } from '../src/errors.js';
+import { fromProblem } from '../src/convert/inbound/common/problem.js';
+import { SpeechineerError } from '../src/errors/index.js';
 import type { SessionState } from '../src/session/state.js';
 import { answer, FakeWebSocket, flush, installFakeRecorder, installFakeWebSocket } from './fakes.js';
 
@@ -99,15 +99,17 @@ describe('lifecycle', () => {
     expect(params.createWorkflow).toHaveBeenCalledTimes(1);
   });
 
-  it('create failure → failed with a typed error in phase start; start() can retry', async () => {
+  it('create failure → failed with a typed error; start() can retry', async () => {
     const { session, params } = speechToForm({
       createWorkflow: vi.fn().mockRejectedValueOnce(new Error('boom')).mockResolvedValue(answer()),
     });
-    await session.start();
+    // Rejects AND reports: a UI bound to the state needs no try/catch, but `await start()`
+    // on a session that never started must not resolve as though it had.
+    await expect(session.start()).rejects.toMatchObject({ code: 'UNKNOWN', message: 'boom' });
     expect(session.getState().status).toBe('failed');
     const err = session.getState().error;
     expect(err).toBeInstanceOf(SpeechineerError);
-    expect(err).toMatchObject({ phase: 'start', code: 'UNKNOWN', message: 'boom', recoverable: true });
+    expect(err).toMatchObject({ code: 'UNKNOWN', type: 'client', message: 'boom' });
     expect(params.onError).toHaveBeenCalledTimes(1);
     expect(params.onError.mock.calls[0][0]).toBe(err);
     await session.start();
@@ -117,14 +119,14 @@ describe('lifecycle', () => {
 });
 
 describe('microphone', () => {
-  it('a denied microphone → failed with MICROPHONE_DENIED (recoverable); start() again re-attaches and becomes active', async () => {
+  it('a denied microphone → failed with MICROPHONE_DENIED; start() again re-attaches and becomes active', async () => {
     const denied = new Error('Permission denied');
     denied.name = 'NotAllowedError';
     recorder.failNextStart = denied;
     const { session, params } = speechToForm();
-    await session.start();
+    await expect(session.start()).rejects.toMatchObject({ code: 'MICROPHONE_DENIED' });
     expect(session.getState().status).toBe('failed');
-    expect(session.getState().error).toMatchObject({ code: 'MICROPHONE_DENIED', phase: 'start', recoverable: true });
+    expect(session.getState().error).toMatchObject({ code: 'MICROPHONE_DENIED', type: 'client' });
     expect(session.getState().isListening).toBe(false);
     expect(params.onError).toHaveBeenCalledTimes(1);
     await session.start();
@@ -172,7 +174,7 @@ describe('connections mirror the sockets', () => {
     recorder.finishStop();
     expect(session.getState().connections.audio?.status).toBe('closed');
     expect(session.getState().isEnding).toBe(false);
-    const sent = FakeWebSocket.byUrl('lifeline').sent.map((s) => JSON.parse(s).type);
+    const sent = FakeWebSocket.byUrl('lifeline').sent.map((s) => JSON.parse(s).event);
     expect(sent).toEqual(['stop_recording_requested']);
     expect(session.getState().status).toBe('active');
   });
@@ -232,7 +234,7 @@ describe('restart re-seeds the service', () => {
   });
 
   it('a session archived while stopped is rebuilt through create with the old id', async () => {
-    const getWorkflow = vi.fn().mockRejectedValue(new WorkflowNotFoundError());
+    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
     const createWorkflow = vi.fn().mockResolvedValueOnce(answer('sess-1')).mockResolvedValueOnce(answer('sess-2'));
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
@@ -272,7 +274,7 @@ describe('restart re-seeds the service', () => {
 
   it('a session minted while the user was cancelling is deleted, not left orphaned', async () => {
     let releaseCreate: (a: ReturnType<typeof answer>) => void = () => {};
-    const getWorkflow = vi.fn().mockRejectedValue(new WorkflowNotFoundError());
+    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
     const createWorkflow = vi
       .fn()
       .mockResolvedValueOnce(answer('sess-1'))
@@ -356,11 +358,11 @@ describe('main connection', () => {
   });
 
   it('4404 → get 404 → create with resume target → fresh create', async () => {
-    const getWorkflow = vi.fn().mockRejectedValue(new WorkflowNotFoundError());
+    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
     const createWorkflow = vi
       .fn()
       .mockResolvedValueOnce(answer('sess-1'))
-      .mockRejectedValueOnce(new WorkflowNotFoundError())
+      .mockRejectedValueOnce(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }))
       .mockResolvedValueOnce(answer('sess-2'));
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
@@ -373,7 +375,7 @@ describe('main connection', () => {
     expect(params.onSessionStart).toHaveBeenCalledTimes(2);
   });
 
-  it('recovery failure → failed with phase recover', async () => {
+  it('recovery failure → failed, carrying what actually failed', async () => {
     const { session } = speechToForm({
       getWorkflow: vi.fn().mockRejectedValue(new Error('down')),
     });
@@ -381,26 +383,74 @@ describe('main connection', () => {
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').serverClose(4404);
     await flush();
-    expect(session.getState()).toMatchObject({ status: 'failed', error: { phase: 'recover', message: 'down' } });
+    expect(session.getState()).toMatchObject({ status: 'failed', error: { message: 'down' } });
   });
 
-  it('a runtime failure reported on the session connection becomes a non-recoverable error in state and onError', async () => {
+  it.each([
+    ['a component failed', 'crash', { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' }],
+    [
+      'the allowance ran out',
+      'quota_exceeded',
+      {
+        code: 'ACCOUNT_QUOTA_EXCEEDED',
+        type: 'quota',
+        message: 'The allowance is used up.',
+        meta: { limit: '1000', used: '1000', remaining: '0', layer: 'account:month' },
+      },
+    ],
+  ])('%s → the session ends, reported through state.error and onError', async (_why, event, error) => {
+    // BOTH are endings, and the SDK must treat them alike. It used to test `type === 'crash'`,
+    // so a spent allowance arrived as an informational event and the app was never told the
+    // session had stopped — the one failure a caller most needs to act on (FLY-492 / D-42).
     const { session, params } = speechToForm();
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').message({
-      type: 'crash',
+      event,
       verbosity: 'error',
       source: 'workflow',
-      payload: { level: 'workflow', error_code: 'X1', message: 'kaput', detail: 'details' },
+      error,
       session_id: 'sess-1',
       timestamp: 't',
     });
+
     const err = session.getState().error;
-    expect(err).toMatchObject({ code: 'X1', phase: 'runtime', recoverable: false, detail: 'details' });
-    expect(err?.message).toBe('kaput: details');
+    expect(err).toMatchObject({ code: error.code, type: error.type });
     expect(params.onError).toHaveBeenCalledTimes(1);
+    // The same instance on both channels — a caller never has to reconcile two objects.
     expect(params.onError.mock.calls[0][0]).toBe(err);
+  });
+
+  it('the close frame does not report the ending a second time', async () => {
+    // The message and the close describe one ending. The close normally follows the message,
+    // and reporting both would show the app two failures for one stopped session.
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').message({
+      event: 'crash',
+      verbosity: 'error',
+      source: 'workflow',
+      error: { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' },
+      session_id: 'sess-1',
+      timestamp: 't',
+    });
+    FakeWebSocket.byUrl('lifeline').serverClose(4500);
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    expect(session.getState().error).toMatchObject({ code: 'EXTRACTION_FAILED' });
+  });
+
+  it('a connection opened after the session ended is still told, by its close code alone', async () => {
+    // Nobody was listening when the failure was reported, so the frame is all there is. Before
+    // this, that case reached the client as silence (D7).
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').serverClose(4410, 'This session has ended.');
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    expect(session.getState().error).toMatchObject({ code: 'SESSION_ENDED', type: 'gone' });
   });
 
   it('every other signal reaches onEvent as a SessionEvent', async () => {
@@ -409,18 +459,18 @@ describe('main connection', () => {
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').message({
-      type: 'transcription_started',
-      verbosity: 'info',
+      event: 'transcription_down',
+      verbosity: 'warning',
       source: 'transcription',
-      payload: { a: 1 },
+      data: { retry_attempt: 1 },
       session_id: 'sess-1',
       timestamp: 't',
     });
     expect(onEvent).toHaveBeenCalledWith({
-      type: 'transcription_started',
-      level: 'info',
+      event: 'transcription_down',
+      level: 'warning',
       source: 'transcription',
-      payload: { a: 1 },
+      data: { retry_attempt: 1 },
       sessionId: 'sess-1',
       timestamp: 't',
     });
@@ -428,8 +478,7 @@ describe('main connection', () => {
 });
 
 describe('end / dispose', () => {
-  it('end: ending → idle, DELETE once, everything closed, values back to initialValues; delete failure only warns', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('end: ending → idle, DELETE once, everything closed, values back to initialValues; a failed delete rejects', async () => {
     const deleteWorkflow = vi.fn().mockRejectedValue(new Error('nope'));
     const { session, transitions } = speechToForm({ deleteWorkflow, initialValues: { age: 41 } });
     await session.start();
@@ -437,12 +486,13 @@ describe('end / dispose', () => {
     FakeWebSocket.byUrl('form_data').open();
     FakeWebSocket.byUrl('form_data').message({ fields: [{ field_id: 'name', value: 'Ada' }] });
     expect(session.getState().values).toEqual({ age: 41, name: 'Ada' });
-    await session.end();
+    // The local teardown still completes — the app reaches `idle` either way — but the caller
+    // is told the session may still be running on the server, which a console.warn never did.
+    await expect(session.end()).rejects.toMatchObject({ message: 'nope' });
     expect(deleteWorkflow).toHaveBeenCalledTimes(1);
-    expect(session.getState()).toEqual({
+    expect(session.getState()).toMatchObject({
       status: 'idle',
       sessionId: null,
-      error: null,
       connections: { session: { status: 'closed' }, audio: { status: 'closed' }, results: { status: 'closed' } },
       values: { age: 41 },
       transcript: '',
@@ -451,8 +501,6 @@ describe('end / dispose', () => {
       isEnding: false,
     });
     expect(transitions).toContain('ending|session=open,audio=open,results=open');
-    expect(warn).toHaveBeenCalledTimes(1);
-    warn.mockRestore();
   });
 
   it('end without start → idle, nothing deleted', async () => {
@@ -531,16 +579,16 @@ describe('text-to-form', () => {
 
   it('extract rejects with the start error when the session cannot be created', async () => {
     const s = createTextToFormWorkflowSession(base({ createWorkflow: vi.fn().mockRejectedValue(new Error('boom')) }));
-    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN', phase: 'start' });
+    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN' });
     expect(s.getState().status).toBe('failed');
   });
 
   it('a rejected extract becomes a typed action error in state and onError, the session stays active', async () => {
     const params = base({ extractText: vi.fn().mockRejectedValue(new Error('nope')) });
     const s = createTextToFormWorkflowSession(params);
-    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN', phase: 'action', message: 'nope' });
+    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN', message: 'nope' });
     expect(s.getState().status).toBe('active');
-    expect(s.getState().error).toMatchObject({ phase: 'action' });
+    expect(s.getState().error).toMatchObject({ code: 'UNKNOWN', message: 'nope' });
     expect(params.onError).toHaveBeenCalledTimes(1);
   });
 });

@@ -60,6 +60,10 @@ export interface SpeechToFormSession {
    * Start listening. Asks for microphone permission the first time, prepares the
    * session, and begins sending audio. Safe to call again after `stop()` to continue
    * in the same session.
+   *
+   * Rejects when the session could not be started, with the same `SpeechineerError`
+   * that reaches `onError` and `state.error`. Handle the promise — `await` it, or
+   * attach a `.catch()` — so a click handler leaves no unhandled rejection behind.
    */
   start: () => Promise<void>;
   /**
@@ -71,6 +75,10 @@ export interface SpeechToFormSession {
    * Finish the session and release everything: the microphone, the connections, and
    * the session itself. `start()` afterwards begins a new one. `values` return to
    * `initialValues`.
+   *
+   * Rejects when Speechineer could not be told the session is over. Everything local
+   * has already been released by then, so a cleanup path — an unmount, a reset — may
+   * catch and ignore it; what it must not do is leave the rejection unhandled.
    */
   end: () => Promise<void>;
   /**

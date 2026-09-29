@@ -12,10 +12,9 @@
  * `onStateChange` only when the state object actually changed.
  */
 
-import { WorkflowNotFoundError } from '../api/workflows/_post.js';
 import { createLifelineClient, type LifelineClient } from '../api/ws/lifeline.js';
-import { type ErrorPhase, fromCrashSignal, type SpeechineerError, toSpeechineerError } from '../errors.js';
-import type { CrashPayload, LifelineSignal } from '../types/sdk/common/lifeline.js';
+import { isSessionNotFound, type SpeechineerError, toSpeechineerError } from '../errors/index.js';
+import type { LifelineSignal } from '../types/sdk/common/lifeline.js';
 import type { ResolveResponseSdkBase } from '../types/sdk/workflows/base.js';
 import {
   type ConnectionKey,
@@ -49,7 +48,7 @@ export interface WorkflowSessionCoreOptions<C extends ResolveResponseSdkBase> {
   initialValues?: Readonly<Record<string, unknown>>;
   /** Build the create request + POST it. A `resumeSessionId` (on recovery) is the resume target. */
   createWorkflowFn: (resumeSessionId?: string) => Promise<C>;
-  /** Fetch a live workflow by id; rejects with `WorkflowNotFoundError` on a live-miss. */
+  /** Fetch a live workflow by id; rejects with a `SESSION_NOT_FOUND` error on a live-miss. */
   getWorkflowFn: (sessionId: string) => Promise<C>;
   /** Build the delete request + POST it. */
   deleteWorkflowFn: (answer: C) => Promise<void>;
@@ -85,7 +84,7 @@ export interface WorkflowSessionCore {
   /** Record the transcript so far. */
   setTranscript: (text: string) => void;
   /** Report a failure that did not come through start/recover (a connection or an action). */
-  fail: (error: unknown, phase: ErrorPhase) => SpeechineerError;
+  fail: (error: unknown) => SpeechineerError;
   /** The store, for bindings that need it directly. */
   store: Store<SessionState>;
 }
@@ -118,8 +117,10 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     update((s) => withAllConnectionsClosed(s));
   };
 
-  const failWith = (phase: ErrorPhase, e: unknown): SpeechineerError => {
-    const err = toSpeechineerError(e, phase);
+  // No `phase` argument any more: a failure already knows what it is, and stamping where it
+  // was caught on top only ever produced a second, less accurate classification of it.
+  const failWith = (e: unknown): SpeechineerError => {
+    const err = toSpeechineerError(e);
     update((s) => withError(withStatus(s, 'failed'), err));
     opts.onError?.(err);
     return err;
@@ -137,10 +138,10 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
         if (!notFoundHandled) teardownConnections();
       },
       onSignal: (sig) => opts.onEvent?.(sig),
-      onCrash: (crash: LifelineSignal & { payload: CrashPayload }) => {
-        // The service stopped the session: a typed, non-recoverable error. The close
-        // that follows tears the connections down; the lifecycle is left to it.
-        const err = fromCrashSignal(crash);
+      onTerminal: (err) => {
+        // The session is over — whether it crashed or ran out of allowance, and whether that
+        // arrived as a message or as the close frame of a connection opened too late. The
+        // close that follows tears the connections down; the lifecycle is left to it.
         update((s) => withError(s, err));
         opts.onError?.(err);
       },
@@ -217,7 +218,12 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
       }
       await activate(created);
     } catch (e) {
-      failWith('start', e);
+      // Reported AND thrown. It still reaches `state.error` and `onError` — a UI bound to the
+      // state needs no try/catch — but `await start()` now rejects instead of resolving on a
+      // session that never started, which is what `await` means everywhere else in JS. The
+      // docs claimed this already; swallowing it meant an app that awaited `start()` and then
+      // called an action got a second, more confusing failure instead of the real one.
+      throw failWith(e);
     } finally {
       starting = false;
     }
@@ -228,12 +234,12 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     try {
       return await opts.getWorkflowFn(oldSessionId);
     } catch (e) {
-      if (!(e instanceof WorkflowNotFoundError)) throw e;
+      if (!isSessionNotFound(e)) throw e;
     }
     try {
       return await opts.createWorkflowFn(oldSessionId);
     } catch (e) {
-      if (!(e instanceof WorkflowNotFoundError)) throw e;
+      if (!isSessionNotFound(e)) throw e;
     }
     return opts.createWorkflowFn();
   };
@@ -256,7 +262,7 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
         // New session is live — allow the next involuntary loss to recover too.
         notFoundHandled = false;
       } catch (e) {
-        failWith('recover', e);
+        failWith(e);
       }
     })();
   };
@@ -275,14 +281,22 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     const c = answer;
     answer = null;
     notFoundHandled = false;
+    let failure: unknown;
     if (c) {
       try {
         await opts.deleteWorkflowFn(c);
       } catch (e) {
-        console.warn('[speechineer] Failed to delete the session on end():', e);
+        // Held, not swallowed. The local teardown must finish either way — the connections
+        // are already down and the app has to reach `idle` — but `await end()` then rejects,
+        // because "the session may still be running on the server" is something the caller
+        // has to be able to learn. It used to be a `console.warn` nobody could catch.
+        failure = e;
       }
     }
     update((s) => withValuesReset(withStatus(withSessionId(s, null), 'idle'), opts.initialValues));
+    // `fail`, not `failWith`: the session really did end, so the status is `idle`. Only the
+    // server-side delete is in doubt, and that is what the error reports.
+    if (failure !== undefined) throw fail(failure);
   };
 
   const dispose = (): void => {
@@ -291,12 +305,12 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     closeMainConnection();
   };
 
-  const sendSignal = (type: string): void => {
-    lifeline?.sendSignal({ type, session_id: answer?.session_id ?? '' });
+  const sendSignal = (event: string): void => {
+    lifeline?.sendSignal({ event, session_id: answer?.session_id ?? '' });
   };
 
-  const fail = (error: unknown, phase: ErrorPhase): SpeechineerError => {
-    const err = toSpeechineerError(error, phase);
+  const fail = (error: unknown): SpeechineerError => {
+    const err = toSpeechineerError(error);
     update((s) => withError(s, err));
     opts.onError?.(err);
     return err;

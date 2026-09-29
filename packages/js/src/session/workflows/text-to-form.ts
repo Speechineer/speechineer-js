@@ -60,7 +60,7 @@ export function createTextToFormWorkflowSession(
       for (const [fieldId, value] of Object.entries(values)) params.onFieldValue?.(fieldId, value);
       return values;
     } catch (e) {
-      throw core.fail(e, 'action');
+      throw core.fail(e);
     }
   };
 

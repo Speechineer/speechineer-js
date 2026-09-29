@@ -25,11 +25,11 @@ export interface UseTextToFormOptions extends TextToFormOptions {
  * @group Capability: Text to form
  */
 export interface UseTextToFormResult extends SessionState {
-  /** Extract field values from text — see `TextToFormSession.extract`. */
+  /** Extract field values from text — see `TextToFormSession.extract`. Rejects when it fails. */
   extract: (text: string) => Promise<Readonly<Record<string, unknown>>>;
-  /** Open the session ahead of time — see `TextToFormSession.start`. */
+  /** Open the session ahead of time — see `TextToFormSession.start`. Rejects when it cannot open. */
   start: () => Promise<void>;
-  /** Finish the session — see `TextToFormSession.end`. */
+  /** Finish the session — see `TextToFormSession.end`. Rejects when the service cannot be told. */
   end: () => Promise<void>;
   /** An `extract` call is in flight. */
   isExtracting: boolean;

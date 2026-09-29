@@ -29,11 +29,11 @@ export interface UseSpeechToFormOptions extends SpeechToFormOptions {
  * @group Capability: Speech to form
  */
 export interface UseSpeechToFormResult extends SessionState {
-  /** Start listening — see `SpeechToFormSession.start`. */
+  /** Start listening — see `SpeechToFormSession.start`. Rejects when the session cannot open. */
   start: () => Promise<void>;
   /** Pause listening — see `SpeechToFormSession.stop`. */
   stop: () => void;
-  /** Finish the session — see `SpeechToFormSession.end`. */
+  /** Finish the session — see `SpeechToFormSession.end`. Rejects when the service cannot be told. */
   end: () => Promise<void>;
   /** The whole state object (the same values as the spread fields). */
   state: SessionState;
@@ -60,9 +60,11 @@ export interface UseSpeechToFormResult extends SessionState {
  *   const { start, stop, isListening, values } = useSpeechToForm({
  *     form: { source: "inline", key: "patient-intake", version: "1", language: "en", fields },
  *   });
+ *   // `start()` rejects when the session cannot open; the same error is in `error`, so
+ *   // the catch only keeps the rejection from going unhandled.
  *   return (
  *     <>
- *       <button type="button" onClick={isListening ? stop : () => void start()}>
+ *       <button type="button" onClick={isListening ? stop : () => void start().catch(() => {})}>
  *         {isListening ? "Stop" : "Talk"}
  *       </button>
  *       <input value={String(values.patientName ?? "")} readOnly />
