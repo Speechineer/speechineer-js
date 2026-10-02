@@ -45,13 +45,13 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Open or update the release PR
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: npm run version-packages
-          commit: "chore: version packages"
-          title: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version-script: npm run version-packages
+          commit-message: "chore: version packages"
+          pr-title: "chore: version packages"
+          # v2 no longer reads GITHUB_TOKEN from the environment.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
     name: Publish to npm (production)
@@ -78,10 +78,10 @@ jobs:
             exit 1
           fi
       - name: Publish the unpublished versions (npm run release = build + changeset publish)
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          publish: npm run release
-          createGithubReleases: true
+          publish-script: npm run release
+          create-github-releases: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
