@@ -171,8 +171,6 @@ export interface FieldConfigFactory {
  */
 export const FormFieldConfig: FieldConfigFactory = {
   slider: (id, range) => FormField.slider(id, '', range),
-  select: (id, options, appendOptionsToPrompt) =>
-    FormField.select(id, '', options, appendOptionsToPrompt),
-  multiselect: (id, options, appendOptionsToPrompt) =>
-    FormField.multiselect(id, '', options, appendOptionsToPrompt),
+  select: (id, options, appendOptionsToPrompt) => FormField.select(id, '', options, appendOptionsToPrompt),
+  multiselect: (id, options, appendOptionsToPrompt) => FormField.multiselect(id, '', options, appendOptionsToPrompt),
 };

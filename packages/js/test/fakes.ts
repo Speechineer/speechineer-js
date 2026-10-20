@@ -43,10 +43,15 @@ export class FakeWebSocket {
     this.readyState = FakeWebSocket.OPEN;
     this.emit('open', {});
   }
-  /** The server (or network) closed it with a code. */
-  serverClose(code: number): void {
+  /**
+   * The server (or network) closed it with a code, and optionally a reason.
+   *
+   * The reason matters now: the service puts `"<type>:<code>"` there, which is the only way a
+   * connection opened after the session ended learns what actually failed.
+   */
+  serverClose(code: number, reason = ''): void {
     this.readyState = FakeWebSocket.CLOSED;
-    this.emit('close', { code });
+    this.emit('close', { code, reason });
   }
   message(data: unknown): void {
     this.emit('message', { data: JSON.stringify(data) });
@@ -79,14 +84,30 @@ export interface FakeRecorderHandle {
   finishStop: () => void;
   /** When set, the next `start()` rejects with it (a denied microphone, …) and clears it. */
   failNextStart: Error | null;
+  /**
+   * Fail the capture pipeline AFTER `start()` has resolved, the way the real recorder does when
+   * the worklet cannot be loaded — on the socket's `open` event, with no promise left to reject.
+   */
+  failPipeline: (error: unknown) => void;
 }
 
 export function installFakeRecorder(): FakeRecorderHandle {
-  const handle: FakeRecorderHandle = { started: 0, stopped: 0, finishStop: () => {}, failNextStart: null };
+  const handle: FakeRecorderHandle = {
+    started: 0,
+    stopped: 0,
+    finishStop: () => {},
+    failNextStart: null,
+    failPipeline: () => {},
+  };
   vi.doMock('../src/tools/audio/recorder.js', () => ({
     createAudioRecorder: (
       _url: string,
-      callbacks: { onRecordingStateChange: (r: boolean) => void; onConnected?: () => void; onDisconnected?: () => void },
+      callbacks: {
+        onRecordingStateChange: (r: boolean) => void;
+        onConnected?: () => void;
+        onDisconnected?: () => void;
+        onFailure?: (error: unknown) => void;
+      },
       config: { sampleRate: number; frameDurationMs: number },
     ) => {
       if (typeof config.sampleRate !== 'number' || Number.isNaN(config.sampleRate)) {
@@ -104,6 +125,13 @@ export function installFakeRecorder(): FakeRecorderHandle {
           recording = true;
           callbacks.onConnected?.();
           callbacks.onRecordingStateChange(true);
+          // Mirrors the real recorder's own order: it reports the connection closed first, then
+          // the failure, because the pipeline is already torn down by the time it reports.
+          handle.failPipeline = (error: unknown) => {
+            recording = false;
+            callbacks.onRecordingStateChange(false);
+            callbacks.onFailure?.(error);
+          };
         },
         stop: () => {
           handle.stopped += 1;
@@ -131,9 +159,35 @@ export function answer(id = 'sess-1') {
       audio_sample_rate: 16000,
       audio_frame_duration_ms: 20,
     },
-    quota: {},
+    // `unit_translation` is required on the wire, so the fake carries it: an incomplete fake
+     // typechecked only while the envelope wrapper was inferring the shape loosely.
+    quota: { unit_translation: {} },
   };
 }
+
+/**
+ * The transport hands back envelopes, so a fake lifecycle call does too.
+ *
+ * `ok` is the wire's own discriminant — the SDK never unwraps it, because `errors` is a list and
+ * a rejected promise can only carry one value.
+ */
+export const ok = <T>(data: T) => ({ ok: true as const, data, meta: {} });
+
+/** A failure envelope. `errors` is cause-ordered, root cause first, exactly as the service sends. */
+export const failed = (
+  ...errors: { code: string; type?: string; dev_message?: string; user_message?: string }[]
+) => ({ ok: false as const, errors, meta: {} });
+
+/** One frame, in the shape `event_of` reads: the event filed under the field its level names. */
+export const frame = (
+  level: 'debug' | 'info' | 'warning' | 'error',
+  event: { code: string; type?: string; dev_message?: string; user_message?: string; meta?: unknown },
+  sessionId = 'sess-1',
+) => ({
+  level,
+  [level]: event,
+  meta: { session_id: sessionId, timestamp: '2026-10-14T00:00:00Z' },
+});
 
 /** Let queued microtasks (awaits inside start/recover) settle. */
 export const flush = async (): Promise<void> => {

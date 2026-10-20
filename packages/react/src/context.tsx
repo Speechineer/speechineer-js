@@ -64,8 +64,7 @@ export function useClient(override?: SpeechineerClient): SpeechineerClient {
   const client = override ?? fromContext;
   if (!client) {
     throw sdkError('NO_CLIENT', {
-      message:
-        'No Speechineer client: wrap your app in <SpeechineerProvider> or pass `client` to the hook.',
+      meta: { detail: 'Wrap your app in <SpeechineerProvider>, or pass `client` to the hook.' },
     });
   }
   return client;

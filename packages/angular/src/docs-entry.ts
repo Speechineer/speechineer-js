@@ -3,7 +3,7 @@
  * token your server signs), then call one inject function per capability in a component or
  * service: `injectSpeechToForm` to fill a form by voice, `injectTextToForm` to fill it from
  * text. Each returns the session (`start`, `stop`, `end` / `extract`) with its state as
- * signals (`values()`, `transcript()`, `isListening()`, `error()`, …). The client, the form
+ * signals (`values()`, `transcript()`, `isListening()`, `errors()`, …). The client, the form
  * definition, the callbacks, and the state types are shared by every package and documented
  * once in the **Core** reference.
  *

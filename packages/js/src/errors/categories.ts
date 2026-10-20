@@ -3,7 +3,14 @@
  *
  * Contributor notes (not rendered): the class IS the category, so `instanceof` and `.type`
  * can never disagree. Adding a category means adding a class here and a row in
- * `convert/inbound/common/problem.ts`; nothing else in the SDK branches on the list.
+ * `convert/inbound/common/event.ts`; nothing else in the SDK branches on the list.
+ *
+ * `gone` has no class any more, and `SpeechineerSessionEndedError` went with it. It existed for
+ * one service class — a wrapper that answered a late caller `410` and carried the real cause one
+ * level down, where you had to know to look for it. A late caller is now answered with the
+ * failure that actually ended the session, so a spent allowance arrives as
+ * `SpeechineerQuotaError` and a broken extraction as `SpeechineerRuntimeError`, each with its own
+ * code and numbers.
  */
 
 import { SpeechineerError } from './base.js';
@@ -47,23 +54,13 @@ export class SpeechineerAccessError extends SpeechineerError {
 }
 
 /**
- * Something named in the request does not exist — a form, a version, or a session that has
- * expired. Distinct from {@link SpeechineerSessionEndedError}, which means it *did* exist.
+ * Something named in the request does not exist — a form, a version, or a session whose id
+ * answers to nothing because it was never created or has long since ended and been swept.
  *
  * @group Events and errors
  */
 export class SpeechineerNotFoundError extends SpeechineerError {
   static readonly type = 'not_found';
-}
-
-/**
- * The session existed and is over. `details[0]` carries what ended it — a failure, or a spent
- * allowance. Start a new session; this one cannot be resumed.
- *
- * @group Events and errors
- */
-export class SpeechineerSessionEndedError extends SpeechineerError {
-  static readonly type = 'gone';
 }
 
 /**
@@ -77,13 +74,51 @@ export class SpeechineerConflictError extends SpeechineerError {
 }
 
 /**
- * The request was not acceptable. `details` lists one atom per offending field, so a rejected
- * form tells you everything that is wrong in one round trip.
+ * The request was not acceptable. When several things are wrong at once you get one error per
+ * cause in `state.errors`, so a rejected form tells you everything in one round trip.
  *
  * @group Events and errors
  */
 export class SpeechineerValidationError extends SpeechineerError {
   static readonly type = 'validation';
+}
+
+/**
+ * The path is right but the HTTP method is not one it accepts. A mistake in how the request
+ * was built, not in what it asked for.
+ *
+ * @group Events and errors
+ */
+export class SpeechineerMethodError extends SpeechineerError {
+  static readonly type = 'method';
+}
+
+/**
+ * Nothing that can be returned matches the `Accept` header the request sent.
+ *
+ * @group Events and errors
+ */
+export class SpeechineerNotAcceptableError extends SpeechineerError {
+  static readonly type = 'not_acceptable';
+}
+
+/**
+ * The request body is larger than the endpoint will read. Send less, or send it in parts.
+ *
+ * @group Events and errors
+ */
+export class SpeechineerTooLargeError extends SpeechineerError {
+  static readonly type = 'too_large';
+}
+
+/**
+ * The body's content type is not one the endpoint reads. The body itself may be perfectly
+ * well-formed — it is the type that is not supported.
+ *
+ * @group Events and errors
+ */
+export class SpeechineerUnsupportedMediaError extends SpeechineerError {
+  static readonly type = 'unsupported_media';
 }
 
 /**

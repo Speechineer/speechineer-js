@@ -6,8 +6,10 @@
  * the same either way.
  */
 
+import type { SdkLanguage } from '../../../errors/manifest.js';
 import type { FormDefinition } from '../../../features/forms/identity.js';
 import type { SessionState } from '../../../session/state.js';
+import type { Envelope } from '../../sdk/common/envelope.js';
 import type { SpeechToFormResolveResponseSdk } from '../../sdk/workflows/speech-to-form.js';
 import type { SpeechToFormWithTranscriptionResolveResponseSdk } from '../../sdk/workflows/speech-to-form-with-transcription.js';
 import type { Account } from '../common/auth.js';
@@ -46,6 +48,16 @@ export interface SpeechToFormOptions extends SessionCallbacks, FormValueCallback
    * token carries the account.
    */
   account?: Account;
+  /**
+   * The language to show this session's messages in, when it differs from the client's
+   * `uiLanguage`.
+   *
+   * It travels with the session, so every `userMessage` arrives already translated. Setting it
+   * again later — on `start()` after a stop, which re-seeds the session — **switches** the
+   * language from that point on; leaving it unset leaves the session in whatever language it
+   * was already running in.
+   */
+  uiLanguage?: SdkLanguage;
 }
 
 /**
@@ -118,7 +130,9 @@ export interface SpeechToFormWorkflowSessionParams extends SessionCallbacks, For
   /** Whether the session also streams the spoken text (the with-transcription workflow). */
   transcript: boolean;
   initialValues?: Record<string, unknown>;
-  createWorkflow: (resumeSessionId?: string) => Promise<SpeechToFormAnswer>;
-  getWorkflow: (sessionId: string) => Promise<SpeechToFormAnswer>;
-  deleteWorkflow: (answer: SpeechToFormAnswer) => Promise<void>;
+  /** The session's own language, read at call time — see `WorkflowSessionCoreOptions.language`. */
+  language?: () => SdkLanguage;
+  createWorkflow: (resumeSessionId?: string) => Promise<Envelope<SpeechToFormAnswer>>;
+  getWorkflow: (sessionId: string) => Promise<Envelope<SpeechToFormAnswer>>;
+  deleteWorkflow: (answer: SpeechToFormAnswer) => Promise<Envelope<null>>;
 }

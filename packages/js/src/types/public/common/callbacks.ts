@@ -2,13 +2,20 @@
  * Dev-facing callback fragments. `SessionCallbacks` are UNIVERSAL (every session has a
  * connection and a lifecycle). `FormValueCallbacks` / `TranscriptCallbacks` are added by the
  * capabilities that produce values / spoken text. Everything a callback reports is ALSO in
- * the session state (`values`, `transcript`, `error`, …) — callbacks exist for imperative
+ * the session state (`values`, `transcript`, `errors`, …) — callbacks exist for imperative
  * integrations (form libraries, logging), not as the only way to read results.
+ *
+ * Contributor notes (not rendered): there is one hook per level plus `onEvent` for all of them,
+ * which is only typeable because a failure and a notice share the `SpeechineerEvent` root. Each
+ * fires **per element**: a frame carries one event, and a successful answer's
+ * `meta.warnings` / `infos` / `debugs` carry a list, so one answer can fire `onWarning` several
+ * times. That is deliberate — the alternative is handing the caller an array and making every
+ * integration loop.
  */
 
 import type { SpeechineerError } from '../../../errors/index.js';
 import type { SessionState } from '../../../session/state.js';
-import type { SessionEvent } from './event.js';
+import type { SessionNotice, SpeechineerEvent } from './event.js';
 
 /**
  * The callbacks every session accepts. All of them are optional: a session runs
@@ -31,21 +38,39 @@ export interface SessionCallbacks {
    */
   onStateChange?: (state: SessionState) => void;
   /**
-   * Every status event Speechineer emits for this session — **progress only**: a
-   * connection re-establishing itself, a recording gesture, a connection Speechineer
-   * refused. Anything that *ends* the session is not an event at all and arrives
-   * through `onError` instead, so you never have to inspect an event to find out
-   * whether the session is still alive. Use this for logging or a live status display.
+   * **Everything** Speechineer reports for this session, at every level, failures included.
+   *
+   * One stream for logging or a live status display. `event.level` tells you what you have:
+   * `'error'` means the session is over, and the other three are advisory. If you only want one
+   * level, take the matching hook below instead.
    */
-  onEvent?: (event: SessionEvent) => void;
+  onEvent?: (event: SpeechineerEvent) => void;
   /**
    * Something failed in a way you should handle: a rejected request, a denied
    * microphone permission, a lost connection, or a failure Speechineer reported
    * while the session ran. Branch on `error.code` for the exact cause, or on the
-   * error's class (`SpeechineerQuotaError`, `SpeechineerSessionEndedError`, …) to
-   * handle a whole family at once. `start()` and `end()` reject with the same error.
+   * error's class (`SpeechineerQuotaError`, `SpeechineerRuntimeError`, …) to
+   * handle a whole family at once.
+   *
+   * Fires once per failure, so one rejected request reporting several problems calls this
+   * several times — the same list you can read as `errors` in the session state.
    */
   onError?: (error: SpeechineerError) => void;
+  /**
+   * Something did not go as asked, but the session carried on — a setting Speechineer could not
+   * honour, a connection it refused, a component that had to retry. Worth surfacing or logging;
+   * never fatal.
+   */
+  onWarning?: (notice: SessionNotice) => void;
+  /** A step worth reporting — a phase of the work starting or finishing. */
+  onInfo?: (notice: SessionNotice) => void;
+  /**
+   * Trace-level detail, for diagnosing an integration.
+   *
+   * Only arrives if the session is running at `debug`; otherwise Speechineer never sends it, so
+   * this stays silent rather than being filtered here.
+   */
+  onDebug?: (notice: SessionNotice) => void;
 }
 
 /**

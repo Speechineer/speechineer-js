@@ -1,54 +1,73 @@
 /**
- * Session-signal types — mirrors the Speechineer API's signal schema.
+ * The frame — one message on the main connection, in **both** directions. Mirrors
+ * `speechineer_protocol.transport.websocket`.
  *
- * The single client-facing envelope: both the signals the service surfaces and the ones the
- * client sends back share this one shape.
- *
- * `error` **xor** `data`, and which half is filled answers one question: **is the session
- * over?** An `error` means it is — that is the whole meaning of the field, so there is no
- * flag, severity or phase left to interpret. Anything that failed without ending the session
- * reports progress in `data` and has a channel of its own (the close frame of the connection
- * it refused, or the status of the request it answered).
+ * Contributor notes (not rendered):
+ * - **Shape:** `{ level, [level]: EventSdk, meta }`. The event is filed under the field its own
+ *   level names, so `{level:"warning", warning:{…}}` and `{level:"error", error:{…}}`. The old
+ *   `{event, verbosity, source, error?, data?, session_id, timestamp}` is gone — not renamed,
+ *   gone: the level *is* the terminality and the event carries its own `code`, so the separate
+ *   `event` name and the `error`-is-present test both became second answers to questions the
+ *   level already answers.
+ * - **One reader serves both directions.** `eventOf` mirrors the service's `event_of`
+ *   byte-for-byte, including the field-matches-level rule, because the service reads the frames
+ *   this SDK sends with exactly that function. A frame it would refuse is a frame that silently
+ *   does nothing.
+ * - **`eventOf` returns `null`, it never throws.** An unknown or malformed frame from a newer
+ *   producer must not break a consumer that was happily reading the ones before it. Not breaking
+ *   is not the same as staying silent, though: the *service* now reports what it drops as a
+ *   declared warning, and so should anything here that drops a frame.
  */
 
-import type { ProblemSdk } from './problem.js';
+import { type EventSdk, isLevel, type LevelSdk } from './event.js';
 
 /**
- * How much you want to hear about. Each signal carries one of these severities, from `debug`
- * chatter to `critical` failures.
- */
-export type LogVerbosity = 'debug' | 'info' | 'warning' | 'error' | 'critical';
-
-/**
- * One signal flowing across the session connection (both directions share this envelope).
+ * The frame's own meta — about the delivery, not about the event.
  *
- * `event` is the service's snake_case signal name (e.g. `'crash'`, `'quota_exceeded'`,
- * `'stop_recording_requested'`) — it says *what happened*. Whether the session is *over* is a
- * separate question, answered by `error`.
+ * `source` is **graded**: the service marks it debug-level, so it is absent unless the session
+ * is running at `debug` visibility. Anything that treats it as required will read `undefined` on
+ * a normal session.
  */
-export interface LifelineSignal {
-  event: string;
-  verbosity: LogVerbosity;
-  source: string;
-  /** The failure that ended the session. Present **iff** the session is over. */
-  error?: ProblemSdk | null;
-  /** What happened, while the session is still running. Absent on a terminal signal. */
-  data?: Record<string, unknown> | null;
+export interface FrameMetaSdk {
   session_id: string;
   /** ISO-8601 UTC timestamp of emission. */
   timestamp: string;
+  /** Which part of the session reported it — present only at `debug` visibility. */
+  source?: string | null;
 }
 
 /**
- * Narrow a signal to a terminal one — the session is over and `error` is present.
- *
- * Asks the envelope, not the event name: `crash` and `quota_exceeded` are both terminal, and
- * a future terminal event would be too. Testing `event === 'crash'` — what this SDK used to
- * do — silently missed a spent budget, which is exactly the session-ending failure a caller
- * most needs to act on.
+ * One frame. The event lives under the key its `level` names, which is why this is an index
+ * signature rather than five optional fields: `eventOf` is the only sanctioned way to read it.
  */
-export function isTerminalSignal(
-  sig: LifelineSignal,
-): sig is LifelineSignal & { error: ProblemSdk } {
-  return sig.error != null;
+export interface FrameSdk {
+  level: LevelSdk;
+  meta?: FrameMetaSdk;
+  [level: string]: unknown;
+}
+
+/**
+ * The level and the event carried by a frame, or `null` if it is not a frame at all.
+ *
+ * Mirrors the service's `event_of`. The field-matches-level rule is enforced here, so a frame
+ * that disagrees with itself is refused rather than read under the wrong level.
+ */
+export function eventOf(message: unknown): { level: LevelSdk; event: EventSdk } | null {
+  if (typeof message !== 'object' || message === null) return null;
+  const frame = message as Record<string, unknown>;
+  if (!isLevel(frame.level)) return null;
+  const event = frame[frame.level];
+  if (typeof event !== 'object' || event === null || Array.isArray(event)) return null;
+  return { level: frame.level, event: event as EventSdk };
+}
+
+/**
+ * Is this frame the session ending?
+ *
+ * **The level is the terminality, nothing else.** The old test — "an `error` key is present" —
+ * happened to keep working across the contract change because that key name did not move, which
+ * is precisely why it was worth replacing: it agreed with the level by luck, not by rule.
+ */
+export function isTerminalLevel(level: LevelSdk): boolean {
+  return level === 'error';
 }

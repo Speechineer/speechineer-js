@@ -21,7 +21,11 @@ export function toSpeechToFormWithTranscriptionResolveRequestSdk(
     ...(resumeSessionId ? { session_id: resumeSessionId } : {}),
     workflow: toWorkflowScope('speech_to_form_with_transcription', options.form),
     feature: toFeatureScope(options.form, options.spokenLanguage),
-    state: toStateScope(options.initialValues, options.spokenLanguage),
+    state: toStateScope({
+      initialValues: options.initialValues,
+      spokenLanguage: options.spokenLanguage,
+      uiLanguage: options.uiLanguage,
+    }),
   };
 }
 
@@ -32,6 +36,10 @@ export function toSpeechToFormWithTranscriptionGetRequestSdk(
 ): SpeechToFormWithTranscriptionGetRequestSdk {
   return {
     session_id: sessionId,
-    state: toStateScope(options.initialValues, options.spokenLanguage),
+    state: toStateScope({
+      initialValues: options.initialValues,
+      spokenLanguage: options.spokenLanguage,
+      uiLanguage: options.uiLanguage,
+    }),
   };
 }

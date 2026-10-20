@@ -22,7 +22,10 @@ export function toTextToFormResolveRequestSdk(
     ...(resumeSessionId ? { session_id: resumeSessionId } : {}),
     workflow: toWorkflowScope('text_to_form', options.form),
     feature: toFeatureScope(options.form),
-    state: toStateScope(options.initialValues),
+    state: toStateScope({
+      initialValues: options.initialValues,
+      uiLanguage: options.uiLanguage,
+    }),
   };
 }
 
@@ -30,6 +33,9 @@ export function toTextToFormResolveRequestSdk(
 export function toTextToFormGetRequestSdk(options: TextToFormOptions, sessionId: string): TextToFormGetRequestSdk {
   return {
     session_id: sessionId,
-    state: toStateScope(options.initialValues),
+    state: toStateScope({
+      initialValues: options.initialValues,
+      uiLanguage: options.uiLanguage,
+    }),
   };
 }

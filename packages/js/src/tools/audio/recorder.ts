@@ -6,6 +6,7 @@
  */
 
 import { type AudioConnectionCallback, createAudioClient } from '../../api/ws/audio.js';
+import { sdkError } from '../../errors/index.js';
 import { getWorkletBlobUrl } from './worklet.js';
 
 export type RecordingStateChangeCallback = (isRecording: boolean) => void;
@@ -22,6 +23,17 @@ export interface AudioRecorderCallbacks {
   onConnected?: AudioConnectionCallback;
   /** Fired at most once when the audio WebSocket closes or errors. */
   onDisconnected?: AudioConnectionCallback;
+  /**
+   * Fired when the capture pipeline cannot be built, after `start()` has already resolved.
+   *
+   * The worklet is loaded on the socket's `open` event, which lands long after `start()` is
+   * done — so a failure there has no promise left to reject and no caller left to throw at.
+   * Without this callback it went to `console.error` and nowhere else (FLY-503): a content
+   * security policy that blocks `blob:` workers left the microphone permission granted, the
+   * socket open, and **no error on the session at all** — exactly the uncatchable `console.warn`
+   * this contract exists to remove.
+   */
+  onFailure?: (error: unknown) => void;
 }
 
 export interface AudioRecorder {
@@ -103,10 +115,20 @@ export function createAudioRecorder(
       isRecording = true;
       callbacks.onRecordingStateChange(true);
     } catch (error) {
-      console.error('[speechineer] Failed to initialize the microphone pipeline:', error);
       _cleanupAudio();
       _stopStream();
       callbacks.onRecordingStateChange(false);
+      // `AUDIO_UNSUPPORTED`, minted here rather than left raw: the causes that reach this point
+      // all mean "the audio stack will not work in this browser as configured" — a worklet the
+      // page's CSP refuses, an `AudioWorkletNode` the engine cannot build, a context the browser
+      // suspended. A raw `DOMException` would arrive as `UNKNOWN`, which an integrator cannot
+      // branch on, and the underlying text is what they actually need, so it rides `meta.detail`.
+      callbacks.onFailure?.(
+        sdkError('AUDIO_UNSUPPORTED', {
+          meta: { detail: error instanceof Error ? error.message : String(error) },
+          cause: error,
+        }),
+      );
     }
   };
 

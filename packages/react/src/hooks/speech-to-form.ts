@@ -22,9 +22,9 @@ export interface UseSpeechToFormOptions extends SpeechToFormOptions {
 
 /**
  * What `useSpeechToForm` returns: the session state spread out for rendering
- * (`values`, `transcript`, `isListening`, `isConnecting`, `isEnding`, `error`,
- * `sessionId`, `status`, `connections`), the controls, and the full `state` object
- * for when you want to compare by reference.
+ * (`values`, `transcript`, `isListening`, `isConnecting`, `isEnding`, `errors`,
+ * `requestId`, `sessionId`, `status`, `connections`), the controls, and the full
+ * `state` object for when you want to compare by reference.
  *
  * @group Capability: Speech to form
  */
@@ -60,7 +60,7 @@ export interface UseSpeechToFormResult extends SessionState {
  *   const { start, stop, isListening, values } = useSpeechToForm({
  *     form: { source: "inline", key: "patient-intake", version: "1", language: "en", fields },
  *   });
- *   // `start()` rejects when the session cannot open; the same error is in `error`, so
+ *   // `start()` rejects when the session cannot open; the same error is in `errors`, so
  *   // the catch only keeps the rejection from going unhandled.
  *   return (
  *     <>

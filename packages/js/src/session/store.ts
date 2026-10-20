@@ -7,6 +7,8 @@
  * @internal
  */
 
+import { safely } from './safely.js';
+
 export type StoreListener<T> = (state: T) => void;
 
 export interface Store<T> {
@@ -27,7 +29,10 @@ export function createStore<T>(initial: T): Store<T> {
     const resolved = typeof next === 'function' ? (next as (current: T) => T)(state) : next;
     if (Object.is(resolved, state)) return;
     state = resolved;
-    for (const listener of Array.from(listeners)) listener(state);
+    // Guarded per listener: one that throws must not stop the ones registered after it. A
+    // framework binding and an app's own `subscribe()` coexist routinely, so an unguarded loop
+    // was silent data loss for whichever happened to be second.
+    for (const listener of Array.from(listeners)) safely(() => listener(state));
   };
 
   const subscribe = (listener: StoreListener<T>): (() => void) => {

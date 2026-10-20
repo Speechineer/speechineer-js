@@ -1,13 +1,21 @@
 /**
  * The observable state of a session — what every capability, in every framework,
  * reports about itself. One immutable object: the lifecycle, the identifier once the
- * session exists, the last error, one entry per connection the session uses, the
+ * session exists, the failures reported so far, one entry per connection the session uses, the
  * latest value of every field, the transcript so far, and the derived flags a UI
  * renders from (`isListening`, `isConnecting`, `isEnding`).
  *
- * Contributor note (never rendered): the `session` connection is the wire lifeline —
- * that name stays internal; publicly it is "the session connection". The flags are
- * recomputed by `finalize` on every update so that every state object is consistent.
+ * Contributor notes (never rendered):
+ * - the `session` connection is the wire lifeline — that name stays internal; publicly it is
+ *   "the session connection". The flags are recomputed by `finalize` on every update so that
+ *   every state object is consistent.
+ * - **`errors` is a list and there is no `error` alias.** A failure answer carries `errors[]`,
+ *   cause-ordered with the root cause first, and nothing may be dropped — so the state holds the
+ *   list rather than its first element. An alias would have made the singular the one everybody
+ *   reads and the list the one nobody does.
+ * - **`requestId` lives here, not on the error.** It belongs to the answer's `meta`, which is
+ *   delivery metadata about the call — the same reason `session_id` is not one of an event's
+ *   fields. Strip-mining it onto one error of several was what this replaced.
  */
 
 import type { SpeechineerError } from '../errors/index.js';
@@ -20,7 +28,9 @@ import type { SpeechineerError } from '../errors/index.js';
  * - `active` — the session exists; `isListening` and `connections` tell you what it is doing.
  * - `recovering` — the session vanished on the server and is being resumed.
  * - `ending` — `end()` is discarding the session.
- * - `failed` — starting or recovering threw; see `error`. `start()` may be called again.
+ * - `failed` — the session is not usable: starting or recovering did not succeed, **or** a
+ *   running session ended because something failed (a crash, a spent allowance). See `errors`;
+ *   `errors[0].code` says which. `start()` may be called again.
  *
  * @group Session state
  */
@@ -76,8 +86,21 @@ export interface SessionState {
   readonly status: SessionStatus;
   /** The id of the running session, or `null` before it exists. */
   readonly sessionId: string | null;
-  /** The last error, or `null`. Cleared when the next `start()` succeeds. */
-  readonly error: SpeechineerError | null;
+  /**
+   * Everything that has failed, root cause first — empty when nothing has.
+   *
+   * A single request can report several problems at once (a rejected form names every offending
+   * field), and a session that ends reports the one failure that ended it. Read `errors[0]` for
+   * the cause to show; the rest is the context it arrived with.
+   *
+   * Cleared when the next `start()` succeeds.
+   */
+  readonly errors: readonly SpeechineerError[];
+  /**
+   * The id of the most recent answer, or `null`. Quote it when reporting a problem: the same id
+   * follows the request through every part of Speechineer that handled it.
+   */
+  readonly requestId: string | null;
   /** The status of each connection: `session` always, the others when the capability uses them. */
   readonly connections: SessionConnections;
   /**
@@ -98,6 +121,7 @@ export interface SessionState {
 
 const CLOSED: ConnectionState = { status: 'closed' };
 const NO_VALUES: Readonly<Record<string, unknown>> = Object.freeze({});
+const NO_ERRORS: readonly SpeechineerError[] = Object.freeze([]);
 
 /** Recompute the derived flags; returns the same reference when nothing changed. @internal */
 export function finalize(state: SessionState): SessionState {
@@ -114,7 +138,7 @@ export function finalize(state: SessionState): SessionState {
 }
 
 /**
- * The state before anything happens: `idle`, no id, no error, every declared
+ * The state before anything happens: `idle`, no id, no errors, every declared
  * connection `closed`, `values` = the initial values, empty transcript.
  *
  * @internal
@@ -128,7 +152,8 @@ export function initialState(
   return finalize({
     status: 'idle',
     sessionId: null,
-    error: null,
+    errors: NO_ERRORS,
+    requestId: null,
     connections: { session: CLOSED, ...extra },
     values: initialValues ? { ...initialValues } : NO_VALUES,
     transcript: '',
@@ -148,9 +173,25 @@ export function withSessionId(state: SessionState, sessionId: string | null): Se
   return state.sessionId === sessionId ? state : { ...state, sessionId };
 }
 
+/**
+ * Replace the failure list. Pass `[]` to clear it.
+ *
+ * @internal
+ */
+export function withErrors(state: SessionState, errors: readonly SpeechineerError[]): SessionState {
+  const next = errors.length === 0 ? NO_ERRORS : errors;
+  if (state.errors === next) return state;
+  if (state.errors.length === 0 && next.length === 0) return state;
+  return { ...state, errors: next };
+}
+
 /** @internal */
-export function withError(state: SessionState, error: SpeechineerError | null): SessionState {
-  return state.error === error ? state : { ...state, error };
+export function withRequestId(state: SessionState, requestId: string | null | undefined): SessionState {
+  const next = requestId ?? null;
+  // An answer without a request id does not erase the one already known: the last id that
+  // actually identified a call is more useful to quote than `null`.
+  if (next === null || state.requestId === next) return state;
+  return { ...state, requestId: next };
 }
 
 /** @internal */

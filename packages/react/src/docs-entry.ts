@@ -2,7 +2,7 @@
  * Speechineer for React. Wrap your app in `SpeechineerProvider` once (your API key, or a
  * token your server signs), then call one hook per capability: `useSpeechToForm` to fill
  * a form by voice, `useTextToForm` to fill it from text. Each hook gives you the session
- * state as plain values (`values`, `transcript`, `isListening`, `error`, …) and the
+ * state as plain values (`values`, `transcript`, `isListening`, `errors`, …) and the
  * controls (`start`, `stop`, `end` / `extract`). The client, the form definition, the
  * callbacks, and the state types are shared by every package and documented once in the
  * **Core** reference.

@@ -101,6 +101,47 @@ describe('toSpeechToFormResolveRequestSdk', () => {
   });
 });
 
+describe('the session language on the wire', () => {
+  // Two different languages, and they are not the same question: `spokenLanguage` is what the
+  // user SAYS (transcription), `uiLanguage` is what they READ (every `user_message` the service
+  // renders). Someone can speak German and read English.
+  it('carries the read language and the spoken one independently', () => {
+    const req = toSpeechToFormResolveRequestSdk(
+      { form: workspace, spokenLanguage: 'de', uiLanguage: 'en' },
+      'AUTH',
+    );
+
+    expect(req.state.transcription_language).toBe('de');
+    expect(req.state.ui_language).toBe('en');
+  });
+
+  it('carries it on the GET re-seed too, which is what makes a mid-session switch possible', () => {
+    // The service reads this scope as "a value replaces, silence keeps", so sending it on get is
+    // how a session changes language from that point on — and the lifeline's snapshot is what
+    // makes "keeps" survive a resume.
+    expect(toSpeechToFormGetRequestSdk({ form: workspace, uiLanguage: 'de' }, 'sess-1').state).toEqual({
+      ui_language: 'de',
+    });
+  });
+
+  it('omits the key entirely when no language was named, rather than sending a blank', () => {
+    // A blank would read as "switch to nothing". Omission is what lets the service fall back to
+    // `Accept-Language` on create, and keep the current language on a resume.
+    expect(toSpeechToFormResolveRequestSdk({ form: workspace }, 'AUTH').state).not.toHaveProperty(
+      'ui_language',
+    );
+    expect(toSpeechToFormGetRequestSdk({ form: workspace }, 'sess-1').state).not.toHaveProperty(
+      'ui_language',
+    );
+  });
+
+  it('text-to-form carries it as well, without a spoken language', () => {
+    const req = toTextToFormResolveRequestSdk({ form: inline, uiLanguage: 'de' }, 'AUTH');
+
+    expect(req.state).toEqual({ ui_language: 'de' });
+  });
+});
+
 describe('the other builders', () => {
   it('with-transcription uses its own workflow key and the same scopes', () => {
     const req = toSpeechToFormWithTranscriptionResolveRequestSdk({ form: inline, spokenLanguage: 'de' }, 'AUTH');

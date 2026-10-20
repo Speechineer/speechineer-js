@@ -1,9 +1,11 @@
 /**
- * Dev-facing client configuration: how the SDK reaches Speechineer and how it identifies
- * the caller. `client.ts` resolves these into the single wire `auth` **JWT string** the
- * create request carries (minted for an unsigned API key, or taken from your token
- * provider for a signed one).
+ * Dev-facing client configuration: how the SDK reaches Speechineer, how it identifies
+ * the caller, and which language people are shown messages in. `client.ts` resolves these
+ * into the single wire `auth` **JWT string** the create request carries (minted for an
+ * unsigned API key, or taken from your token provider for a signed one).
  */
+
+import type { SdkLanguage } from '../../../errors/manifest.js';
 
 /**
  * The end user a session is for. Usage and per-account limits are tracked against
@@ -67,4 +69,16 @@ export interface ClientOptions {
    * `apiKey`; ignored with `token` (the token carries the account).
    */
   account?: Account;
+  /**
+   * The language to show people messages in — `'en'` or `'de'`, defaulting to English.
+   *
+   * It reaches two places. Every `userMessage` Speechineer sends is already translated into it,
+   * because the language travels with the session; and the handful of messages the SDK writes
+   * itself (a denied microphone, an unreachable service) are rendered in it too. Developer
+   * messages stay English, since they are for you.
+   *
+   * Set it once here and every session follows. If you do not, Speechineer falls back to the
+   * browser's `Accept-Language` and then to English.
+   */
+  uiLanguage?: SdkLanguage;
 }

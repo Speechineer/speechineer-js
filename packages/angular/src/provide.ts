@@ -47,8 +47,9 @@ export function resolveClient(override?: SpeechineerClient): SpeechineerClient {
   const client = override ?? inject(SPEECHINEER_CLIENT, { optional: true });
   if (!client) {
     throw sdkError('NO_CLIENT', {
-      message:
-        'No Speechineer client: add provideSpeechineer(...) to your application providers or pass `client`.',
+      meta: {
+        detail: 'Add provideSpeechineer(...) to your application providers, or pass `client`.',
+      },
     });
   }
   return client;

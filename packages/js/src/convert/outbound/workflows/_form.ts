@@ -56,15 +56,32 @@ export function toFeatureScope(
   };
 }
 
-/** The top-level `state` request scope: restorable values (+ the runtime spoken-language hint). */
-export function toStateScope(
-  initialValues?: Readonly<Record<string, unknown>>,
-  spokenLanguage?: string,
-): { field_values?: FieldValue[]; transcription_language?: string } {
+/**
+ * The top-level `state` request scope: restorable values, the runtime spoken-language hint, and
+ * the language people are shown messages in.
+ *
+ * Contributor notes (not rendered):
+ * - **An options object, not positional args.** Three independent optionals in a row is how a
+ *   caller ends up passing the spoken language where the UI language goes — and the two are
+ *   different things (one is what the user speaks, the other is what they read).
+ * - **Every key is omitted when empty, and that is the contract.** The service reads this scope
+ *   with "a value replaces, silence keeps": a non-blank `ui_language` switches the session's
+ *   language from here on, a blank one leaves whatever the session already ran in. Sending `''`
+ *   would mean "switch to nothing" — which is why the spread is conditional rather than always
+ *   writing the key.
+ * - It is built identically for **create and get**, so the same rules apply to a resume.
+ */
+export function toStateScope(scope: {
+  initialValues?: Readonly<Record<string, unknown>>;
+  spokenLanguage?: string;
+  uiLanguage?: string;
+}): { field_values?: FieldValue[]; transcription_language?: string; ui_language?: string } {
+  const { initialValues, spokenLanguage, uiLanguage } = scope;
   return {
     ...(initialValues && Object.keys(initialValues).length > 0
       ? { field_values: toSdkFieldValues(initialValues) }
       : {}),
     ...(spokenLanguage ? { transcription_language: spokenLanguage } : {}),
+    ...(uiLanguage ? { ui_language: uiLanguage } : {}),
   };
 }

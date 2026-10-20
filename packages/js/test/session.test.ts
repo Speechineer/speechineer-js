@@ -5,11 +5,19 @@
  * per-capability orchestration with fake transports.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fromProblem } from '../src/convert/inbound/common/problem.js';
-import { SpeechineerError } from '../src/errors/index.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SpeechineerError, sdkError } from '../src/errors/index.js';
 import type { SessionState } from '../src/session/state.js';
-import { answer, FakeWebSocket, flush, installFakeRecorder, installFakeWebSocket } from './fakes.js';
+import {
+  answer,
+  failed,
+  FakeWebSocket,
+  flush,
+  frame,
+  installFakeRecorder,
+  installFakeWebSocket,
+  ok,
+} from './fakes.js';
 
 const recorder = installFakeRecorder();
 const { createSpeechToFormWorkflowSession } = await import('../src/session/workflows/speech-to-form.js');
@@ -19,9 +27,9 @@ function speechToForm(overrides: Record<string, unknown> = {}) {
   const transitions: string[] = [];
   const params = {
     transcript: false,
-    createWorkflow: vi.fn(async () => answer()),
-    getWorkflow: vi.fn(async () => answer()),
-    deleteWorkflow: vi.fn(async () => {}),
+    createWorkflow: vi.fn(async () => ok(answer())),
+    getWorkflow: vi.fn(async () => ok(answer())),
+    deleteWorkflow: vi.fn(async () => ok(null)),
     onFieldValue: vi.fn(),
     onTranscript: vi.fn(),
     onSessionStart: vi.fn(),
@@ -53,7 +61,8 @@ describe('lifecycle', () => {
     expect(session.getState()).toEqual({
       status: 'idle',
       sessionId: null,
-      error: null,
+      errors: [],
+      requestId: null,
       connections: { session: { status: 'closed' }, audio: { status: 'closed' }, results: { status: 'closed' } },
       values: {},
       transcript: '',
@@ -101,20 +110,21 @@ describe('lifecycle', () => {
 
   it('create failure → failed with a typed error; start() can retry', async () => {
     const { session, params } = speechToForm({
-      createWorkflow: vi.fn().mockRejectedValueOnce(new Error('boom')).mockResolvedValue(answer()),
+      createWorkflow: vi.fn().mockRejectedValueOnce(new Error('boom')).mockResolvedValue(ok(answer())),
     });
     // Rejects AND reports: a UI bound to the state needs no try/catch, but `await start()`
     // on a session that never started must not resolve as though it had.
-    await expect(session.start()).rejects.toMatchObject({ code: 'UNKNOWN', message: 'boom' });
+    await expect(session.start()).rejects.toMatchObject({ code: 'UNKNOWN' });
     expect(session.getState().status).toBe('failed');
-    const err = session.getState().error;
+    const err = session.getState().errors[0];
     expect(err).toBeInstanceOf(SpeechineerError);
-    expect(err).toMatchObject({ code: 'UNKNOWN', type: 'client', message: 'boom' });
+    expect(err).toMatchObject({ code: 'UNKNOWN', type: 'client' });
+    expect(err.message).toContain('boom');
     expect(params.onError).toHaveBeenCalledTimes(1);
     expect(params.onError.mock.calls[0][0]).toBe(err);
     await session.start();
     expect(session.getState().status).toBe('active');
-    expect(session.getState().error).toBeNull();
+    expect(session.getState().errors).toEqual([]);
   });
 });
 
@@ -126,14 +136,108 @@ describe('microphone', () => {
     const { session, params } = speechToForm();
     await expect(session.start()).rejects.toMatchObject({ code: 'MICROPHONE_DENIED' });
     expect(session.getState().status).toBe('failed');
-    expect(session.getState().error).toMatchObject({ code: 'MICROPHONE_DENIED', type: 'client' });
+    expect(session.getState().errors[0]).toMatchObject({ code: 'MICROPHONE_DENIED', type: 'client' });
     expect(session.getState().isListening).toBe(false);
     expect(params.onError).toHaveBeenCalledTimes(1);
     await session.start();
     expect(params.createWorkflow).toHaveBeenCalledTimes(1); // the same session — no second create
     expect(session.getState().status).toBe('active');
-    expect(session.getState().error).toBeNull();
+    expect(session.getState().errors).toEqual([]);
     expect(session.getState().isListening).toBe(true);
+  });
+
+  it('a capture pipeline that fails AFTER start reports a real error, not a console line', async () => {
+    // FLY-503. The worklet is loaded on the audio socket's `open` event, which lands after
+    // `start()` has resolved — so this failure has no promise to reject and no caller to throw
+    // at. It used to go to `console.error` and nowhere else: a content security policy that
+    // blocks `blob:` workers left the microphone granted, the socket open and NOTHING on the
+    // session. The uncatchable `console.warn` is exactly what this contract removes.
+    const { session, params } = speechToForm();
+    await session.start();
+    expect(session.getState().isListening).toBe(true);
+
+    // What the real recorder hands to `onFailure`: it mints the code itself, since only it
+    // knows the failure is the audio stack rather than the microphone. The fake replaces the
+    // real recorder wholesale, so that minting is not exercised here — what this pins is that
+    // the failure REACHES the session at all, which is what went to `console.error` before.
+    recorder.failPipeline(
+      sdkError('AUDIO_UNSUPPORTED', {
+        meta: { detail: 'Refused to load the worklet: violates the CSP' },
+        cause: new Error('Refused to load the worklet: violates the CSP'),
+      }),
+    );
+
+    // It reaches the hook AND the state, like every other failure.
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    const err = session.getState().errors[0];
+    expect(err).toMatchObject({ code: 'AUDIO_UNSUPPORTED', type: 'client' });
+    // The underlying text is what diagnoses it, so it rides `meta` rather than replacing the
+    // declaration's sentence.
+    expect(err.meta?.detail).toContain('violates the CSP');
+    // The SESSION is not declared dead: its main connection and the service-side session are
+    // both still live. What is true is reported — the audio connection is closed and nothing is
+    // listening.
+    expect(session.getState().isListening).toBe(false);
+    expect(session.getState().connections.audio?.status).toBe('closed');
+    expect(session.getState().status).toBe('active');
+  });
+});
+
+describe('a callback of the app\'s own is never allowed to break the session', () => {
+  // FLY-503. These are the app's functions running inside our control flow. Before they were
+  // guarded, three things went wrong, and each is pinned below.
+  //
+  // **Fake timers, because `safely()` re-throws on a fresh task.** That is the whole point of it
+  // — the app's bug has to reach `window.onerror` rather than vanish — but in a test runner a
+  // throw on a real timer lands nowhere a test can see, and vitest counts it as an unhandled
+  // error: the suite then printed every test as passing and still exited non-zero, which is how
+  // these two leaked past a run I had called green. Holding the timers lets each test ASSERT the
+  // re-throw instead, so the contract is checked rather than merely survived.
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    // Drops any re-throw still pending — a listener that throws on every state change queues
+    // one per transition, and only the first is asserted.
+    vi.useRealTimers();
+  });
+
+  it('a throwing onError still lets onEvent fire, and start() rejects with the REAL failure', async () => {
+    // `failWith` reports and then returns the value `start()` throws, so a throwing `onError`
+    // used to replace the rejection — the app caught its own bug instead of the failure it was
+    // handling, while `state.errors` held the right thing. The two sources disagreed.
+    const onEvent = vi.fn();
+    const onError = vi.fn(() => {
+      throw new Error('the app\'s own handler is broken');
+    });
+    const { session, params } = speechToForm({ onError, onEvent });
+    params.createWorkflow.mockRejectedValueOnce(new Error('boom'));
+
+    await expect(session.start()).rejects.toMatchObject({ code: 'UNKNOWN' });
+    expect(session.getState().errors[0]).toMatchObject({ code: 'UNKNOWN' });
+    // The report that was meant to follow onError still happened.
+    expect(onEvent).toHaveBeenCalledTimes(1);
+    // And the app's own bug is not swallowed — it surfaces on its own task, which is where an
+    // error reporter can see it.
+    expect(() => vi.runAllTimers()).toThrow("the app's own handler is broken");
+  });
+
+  it('a throwing subscribe listener does not starve the ones after it', async () => {
+    // `setState` notified in a bare loop, so one throwing listener aborted it and every
+    // listener registered later silently stopped receiving state. A framework binding plus the
+    // app's own `subscribe()` is the normal case, so this was real loss with no symptom.
+    const { session } = speechToForm();
+    const second = vi.fn();
+    session.subscribe(() => {
+      throw new Error('the first listener is broken');
+    });
+    session.subscribe(second);
+
+    await session.start();
+
+    expect(second).toHaveBeenCalled();
+    expect(() => vi.runAllTimers()).toThrow('the first listener is broken');
   });
 });
 
@@ -174,8 +278,10 @@ describe('connections mirror the sockets', () => {
     recorder.finishStop();
     expect(session.getState().connections.audio?.status).toBe('closed');
     expect(session.getState().isEnding).toBe(false);
-    const sent = FakeWebSocket.byUrl('lifeline').sent.map((s) => JSON.parse(s).event);
-    expect(sent).toEqual(['stop_recording_requested']);
+    // The frame's level names the field the event sits under, so the code is read from there —
+    // the old top-level `event` name is gone from the contract.
+    const sent = FakeWebSocket.byUrl('lifeline').sent.map((s) => JSON.parse(s).info?.code);
+    expect(sent).toEqual(['STOP_RECORDING_REQUESTED']);
     expect(session.getState().status).toBe('active');
   });
 
@@ -234,8 +340,10 @@ describe('restart re-seeds the service', () => {
   });
 
   it('a session archived while stopped is rebuilt through create with the old id', async () => {
-    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
-    const createWorkflow = vi.fn().mockResolvedValueOnce(answer('sess-1')).mockResolvedValueOnce(answer('sess-2'));
+    // `WORKFLOW_NOT_FOUND` is the code the resume chain advances on — renamed from
+    // `SESSION_NOT_FOUND` by the protocol, which is the rename that silently broke this chain.
+    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' }));
+    const createWorkflow = vi.fn().mockResolvedValueOnce(ok(answer('sess-1'))).mockResolvedValueOnce(ok(answer('sess-2')));
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
@@ -251,10 +359,13 @@ describe('restart re-seeds the service', () => {
   });
 
   it('end() while the re-seed is in flight does not resurrect the session', async () => {
-    let releaseGet: (a: ReturnType<typeof answer>) => void = () => {};
-    const getWorkflow = vi.fn(() => new Promise<ReturnType<typeof answer>>((resolve) => {
-      releaseGet = resolve;
-    }));
+    let releaseGet: (a: ReturnType<typeof ok<ReturnType<typeof answer>>>) => void = () => {};
+    const getWorkflow = vi.fn(
+      () =>
+        new Promise<ReturnType<typeof ok<ReturnType<typeof answer>>>>((resolve) => {
+          releaseGet = resolve;
+        }),
+    );
     const { session } = speechToForm({ getWorkflow });
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
@@ -263,7 +374,7 @@ describe('restart re-seeds the service', () => {
 
     const restarting = session.start();
     await session.end();
-    releaseGet(answer('sess-1'));
+    releaseGet(ok(answer('sess-1')));
     await restarting;
     await flush();
 
@@ -273,14 +384,17 @@ describe('restart re-seeds the service', () => {
   });
 
   it('a session minted while the user was cancelling is deleted, not left orphaned', async () => {
-    let releaseCreate: (a: ReturnType<typeof answer>) => void = () => {};
-    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
+    let releaseCreate: (a: ReturnType<typeof ok<ReturnType<typeof answer>>>) => void = () => {};
+    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' }));
     const createWorkflow = vi
       .fn()
-      .mockResolvedValueOnce(answer('sess-1'))
-      .mockImplementationOnce(() => new Promise<ReturnType<typeof answer>>((resolve) => {
-        releaseCreate = resolve;
-      }));
+      .mockResolvedValueOnce(ok(answer('sess-1')))
+      .mockImplementationOnce(
+        () =>
+          new Promise<ReturnType<typeof ok<ReturnType<typeof answer>>>>((resolve) => {
+            releaseCreate = resolve;
+          }),
+      );
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
@@ -290,7 +404,7 @@ describe('restart re-seeds the service', () => {
     const restarting = session.start();
     await flush(); // let the get reject so the create is the call in flight
     await session.end();
-    releaseCreate(answer('sess-2'));
+    releaseCreate(ok(answer('sess-2')));
     await restarting;
     await flush();
 
@@ -358,12 +472,13 @@ describe('main connection', () => {
   });
 
   it('4404 → get 404 → create with resume target → fresh create', async () => {
-    const getWorkflow = vi.fn().mockRejectedValue(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }));
+    const gone = () => failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' });
+    const getWorkflow = vi.fn().mockResolvedValue(gone());
     const createWorkflow = vi
       .fn()
-      .mockResolvedValueOnce(answer('sess-1'))
-      .mockRejectedValueOnce(fromProblem({ code: 'SESSION_NOT_FOUND', type: 'not_found', message: 'gone' }))
-      .mockResolvedValueOnce(answer('sess-2'));
+      .mockResolvedValueOnce(ok(answer('sess-1')))
+      .mockResolvedValueOnce(gone())
+      .mockResolvedValueOnce(ok(answer('sess-2')));
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
@@ -383,97 +498,215 @@ describe('main connection', () => {
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').serverClose(4404);
     await flush();
-    expect(session.getState()).toMatchObject({ status: 'failed', error: { message: 'down' } });
+    expect(session.getState().status).toBe('failed');
+    // What actually failed, not a generic "recovery failed": the thrown reason rides
+    // `meta.detail` and is interpolated into the declaration's sentence.
+    expect(session.getState().errors[0]).toMatchObject({ code: 'UNKNOWN' });
+    expect(session.getState().errors[0].devMessage).toContain('down');
   });
 
   it.each([
-    ['a component failed', 'crash', { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' }],
+    [
+      'a component failed',
+      {
+        code: 'EXTRACTION_FAILED',
+        type: 'runtime',
+        dev_message: 'Field extraction could not be restarted.',
+        user_message: 'Die Verarbeitung wurde unterbrochen.',
+      },
+    ],
     [
       'the allowance ran out',
-      'quota_exceeded',
       {
         code: 'ACCOUNT_QUOTA_EXCEEDED',
         type: 'quota',
-        message: 'The allowance is used up.',
+        dev_message: 'This account has used 1000 of its 1000 units.',
+        user_message: 'Das Guthaben ist aufgebraucht.',
         meta: { limit: '1000', used: '1000', remaining: '0', layer: 'account:month' },
       },
     ],
-  ])('%s → the session ends, reported through state.error and onError', async (_why, event, error) => {
-    // BOTH are endings, and the SDK must treat them alike. It used to test `type === 'crash'`,
-    // so a spent allowance arrived as an informational event and the app was never told the
-    // session had stopped — the one failure a caller most needs to act on (FLY-492 / D-42).
+  ])('%s → the session ends, reported through state.errors and onError', async (_why, error) => {
+    // BOTH are endings, and the SDK must treat them alike. It used to test the event NAME, so a
+    // spent allowance arrived as an informational event and the app was never told the session
+    // had stopped — the one failure a caller most needs to act on (FLY-492 / D-42). Now the
+    // LEVEL is the terminality and nothing else is consulted.
     const { session, params } = speechToForm();
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
-    FakeWebSocket.byUrl('lifeline').message({
-      event,
-      verbosity: 'error',
-      source: 'workflow',
-      error,
-      session_id: 'sess-1',
-      timestamp: 't',
-    });
+    FakeWebSocket.byUrl('lifeline').message(frame('error', error));
 
-    const err = session.getState().error;
+    // The status says the session is over, so `status` can be trusted on its own. It used to
+    // stay `active` with only `errors` populated, which made "is this session usable" a
+    // two-field question nothing documented.
+    expect(session.getState().status).toBe('failed');
+    const err = session.getState().errors[0];
     expect(err).toMatchObject({ code: error.code, type: error.type });
+    // Both sentences survive the frame — the reader on the screen and the reader in the logs.
+    expect(err.userMessage).toBe(error.user_message);
+    expect(err.devMessage).toBe(error.dev_message);
+    expect(err.meta).toEqual((error as { meta?: Record<string, unknown> }).meta ?? null);
     expect(params.onError).toHaveBeenCalledTimes(1);
     // The same instance on both channels — a caller never has to reconcile two objects.
     expect(params.onError.mock.calls[0][0]).toBe(err);
   });
 
   it('the close frame does not report the ending a second time', async () => {
-    // The message and the close describe one ending. The close normally follows the message,
-    // and reporting both would show the app two failures for one stopped session.
+    // The frame and the close describe one ending. The close normally follows the frame, and
+    // reporting both would show the app two failures for one stopped session — and the frame is
+    // the better report, since a close frame cannot carry sentences or meta.
     const { session, params } = speechToForm();
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
-    FakeWebSocket.byUrl('lifeline').message({
-      event: 'crash',
-      verbosity: 'error',
-      source: 'workflow',
-      error: { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' },
-      session_id: 'sess-1',
-      timestamp: 't',
+    FakeWebSocket.byUrl('lifeline').message(
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+    );
+    FakeWebSocket.byUrl('lifeline').serverClose(4500, 'runtime:EXTRACTION_FAILED');
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    expect(session.getState().errors[0]).toMatchObject({ code: 'EXTRACTION_FAILED' });
+  });
+
+  it('a connection opened after the session ended is still told, by its close frame alone', async () => {
+    // Nobody was listening when the failure was reported, so the close frame is all there is.
+    // Before this, that case reached the client as silence (D7) — and then, for a release, as a
+    // locally invented `SESSION_ENDED` that the service had never sent.
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').serverClose(4500, 'runtime:EXTRACTION_FAILED');
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    // The REAL code and category, read off the reason — not a placeholder derived from 4500,
+    // which could not have distinguished `runtime` from `service` or `client` anyway.
+    expect(session.getState().errors[0]).toMatchObject({
+      code: 'EXTRACTION_FAILED',
+      type: 'runtime',
     });
-    FakeWebSocket.byUrl('lifeline').serverClose(4500);
-
-    expect(params.onError).toHaveBeenCalledTimes(1);
-    expect(session.getState().error).toMatchObject({ code: 'EXTRACTION_FAILED' });
+    // A close frame has no room for sentences, so the user-facing one is the SDK's own generic
+    // line — and it claims only that the connection closed.
+    expect(session.getState().errors[0].userMessage).toBe('Something went wrong.');
   });
 
-  it('a connection opened after the session ended is still told, by its close code alone', async () => {
-    // Nobody was listening when the failure was reported, so the frame is all there is. Before
-    // this, that case reached the client as silence (D7).
+  it('a session that died can be started again, which is what `failed` promises', async () => {
+    // `failed` documents "start() may be called again", so the promise is worth a test — and it
+    // exercises the resume chain end to end, which is the thing that was quietly broken: the
+    // guard waited for a code the service had renamed, so this never got past the first `get`.
     const { session, params } = speechToForm();
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
-    FakeWebSocket.byUrl('lifeline').serverClose(4410, 'This session has ended.');
+    FakeWebSocket.byUrl('lifeline').message(
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+    );
+    expect(session.getState().status).toBe('failed');
 
-    expect(params.onError).toHaveBeenCalledTimes(1);
-    expect(session.getState().error).toMatchObject({ code: 'SESSION_ENDED', type: 'gone' });
+    await session.start();
+
+    expect(session.getState().status).toBe('active');
+    // The previous failure is cleared rather than lingering next to a live session.
+    expect(session.getState().errors).toEqual([]);
+    // Re-seeded through `get`, not re-created: the session id still named something live.
+    expect(params.getWorkflow).toHaveBeenCalledTimes(1);
+    expect(params.createWorkflow).toHaveBeenCalledTimes(1);
   });
 
-  it('every other signal reaches onEvent as a SessionEvent', async () => {
+  it('a close frame with no reason at all is still reported, as UNKNOWN', async () => {
+    // An older service, or a proxy closing on its behalf. The SDK says what it knows and no
+    // more, rather than guessing at one of the service's codes.
+    const { session, params } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').serverClose(4500, '');
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    expect(session.getState().errors[0]).toMatchObject({ code: 'UNKNOWN', type: 'client' });
+    expect(session.getState().errors[0].devMessage).toContain('4500');
+  });
+
+  it('a non-terminal frame reaches its own level hook AND onEvent', async () => {
+    // Before this, every one of these arrived blank: the reader looked for `event`/`verbosity`/
+    // `data`, and the frame had moved to `{level, <level>, meta}` — so each notice was
+    // delivered and then silently discarded.
     const onEvent = vi.fn();
-    const { session } = speechToForm({ onEvent });
+    const onWarning = vi.fn();
+    const onInfo = vi.fn();
+    const { session } = speechToForm({ onEvent, onWarning, onInfo });
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
-    FakeWebSocket.byUrl('lifeline').message({
-      event: 'transcription_down',
-      verbosity: 'warning',
-      source: 'transcription',
-      data: { retry_attempt: 1 },
-      session_id: 'sess-1',
-      timestamp: 't',
-    });
-    expect(onEvent).toHaveBeenCalledWith({
-      event: 'transcription_down',
+    FakeWebSocket.byUrl('lifeline').message(
+      frame('warning', {
+        code: 'TRANSCRIPTION_DOWN',
+        type: 'recovery',
+        dev_message: 'Transcription dropped; retrying.',
+        user_message: 'Die Spracherkennung wird neu verbunden.',
+        meta: { retry_attempt: 1 },
+      }),
+    );
+
+    const notice = {
       level: 'warning',
-      source: 'transcription',
-      data: { retry_attempt: 1 },
-      sessionId: 'sess-1',
-      timestamp: 't',
-    });
+      code: 'TRANSCRIPTION_DOWN',
+      type: 'recovery',
+      devMessage: 'Transcription dropped; retrying.',
+      userMessage: 'Die Spracherkennung wird neu verbunden.',
+      meta: { retry_attempt: 1 },
+    };
+    expect(onWarning).toHaveBeenCalledWith(notice);
+    // `onEvent` receives everything, which is the whole point of an error and a notice sharing
+    // one shape.
+    expect(onEvent).toHaveBeenCalledWith(notice);
+    // ...and only its own level's hook fires.
+    expect(onInfo).not.toHaveBeenCalled();
+  });
+
+  it('a failure reaches onError AND onEvent, because an error is an event', async () => {
+    const onEvent = vi.fn();
+    const onWarning = vi.fn();
+    const { session, params } = speechToForm({ onEvent, onWarning });
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').message(
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+    );
+
+    expect(params.onError).toHaveBeenCalledTimes(1);
+    expect(onEvent).toHaveBeenCalledTimes(1);
+    expect(onEvent.mock.calls[0][0]).toBe(params.onError.mock.calls[0][0]);
+    expect(onEvent.mock.calls[0][0].level).toBe('error');
+    expect(onWarning).not.toHaveBeenCalled();
+  });
+
+  it('a frame this build cannot read is dropped, not raised', async () => {
+    // Forward compatibility: a newer service adding a shape must not break an older app. The
+    // service applies the same rule to the frames this SDK sends it.
+    const onEvent = vi.fn();
+    const { session, params } = speechToForm({ onEvent });
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    FakeWebSocket.byUrl('lifeline').message({ level: 'telepathy', telepathy: { code: 'X' } });
+    FakeWebSocket.byUrl('lifeline').message({ level: 'warning' }); // level with no payload
+    FakeWebSocket.byUrl('lifeline').message({ nonsense: true });
+
+    expect(onEvent).not.toHaveBeenCalled();
+    expect(params.onError).not.toHaveBeenCalled();
+    expect(session.getState().status).toBe('active');
+  });
+
+  it('sends a client frame in the shape the service reads', async () => {
+    // The service's reader answers `None` for anything else and drops the frame in SILENCE, so
+    // a shape mismatch here does not fail loudly — it just means the stop gesture does nothing,
+    // which is exactly what happened for a release (§7c-1).
+    const { session } = speechToForm();
+    await session.start();
+    FakeWebSocket.byUrl('lifeline').open();
+    session.stop();
+
+    const sent = FakeWebSocket.byUrl('lifeline').sent.map((s) => JSON.parse(s));
+    expect(sent).toContainEqual(
+      expect.objectContaining({
+        level: 'info',
+        info: { code: 'STOP_RECORDING_REQUESTED' },
+      }),
+    );
   });
 });
 
@@ -488,7 +721,8 @@ describe('end / dispose', () => {
     expect(session.getState().values).toEqual({ age: 41, name: 'Ada' });
     // The local teardown still completes — the app reaches `idle` either way — but the caller
     // is told the session may still be running on the server, which a console.warn never did.
-    await expect(session.end()).rejects.toMatchObject({ message: 'nope' });
+    await expect(session.end()).rejects.toMatchObject({ code: 'UNKNOWN' });
+    expect(session.getState().errors[0].devMessage).toContain('nope');
     expect(deleteWorkflow).toHaveBeenCalledTimes(1);
     expect(session.getState()).toMatchObject({
       status: 'idle',
@@ -523,7 +757,7 @@ describe('end / dispose', () => {
     // the vanished session is not deleted (nothing to delete), and the late recovery
     // result must not resurrect the session
     expect(params.deleteWorkflow).not.toHaveBeenCalled();
-    release(answer());
+    release(ok(answer()));
     await flush();
     expect(session.getState().status).toBe('idle');
     expect(session.getState().sessionId).toBeNull();
@@ -548,9 +782,9 @@ describe('end / dispose', () => {
 
 describe('text-to-form', () => {
   const base = (overrides: Record<string, unknown> = {}) => ({
-    createWorkflow: vi.fn(async () => answer()),
-    getWorkflow: vi.fn(async () => answer()),
-    deleteWorkflow: vi.fn(async () => {}),
+    createWorkflow: vi.fn(async () => ok(answer())),
+    getWorkflow: vi.fn(async () => ok(answer())),
+    deleteWorkflow: vi.fn(async () => ok(null)),
     extractText: vi.fn(async () => ({ name: 'Ada', age: 41 })),
     onFieldValue: vi.fn(),
     onError: vi.fn(),
@@ -586,9 +820,10 @@ describe('text-to-form', () => {
   it('a rejected extract becomes a typed action error in state and onError, the session stays active', async () => {
     const params = base({ extractText: vi.fn().mockRejectedValue(new Error('nope')) });
     const s = createTextToFormWorkflowSession(params);
-    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN', message: 'nope' });
+    await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN' });
     expect(s.getState().status).toBe('active');
-    expect(s.getState().error).toMatchObject({ code: 'UNKNOWN', message: 'nope' });
+    expect(s.getState().errors[0]).toMatchObject({ code: 'UNKNOWN' });
+    expect(s.getState().errors[0].devMessage).toContain('nope');
     expect(params.onError).toHaveBeenCalledTimes(1);
   });
 });

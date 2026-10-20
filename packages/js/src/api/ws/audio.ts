@@ -12,6 +12,8 @@
  * lifeline WebSocket alone, never here.
  */
 
+import { sdkError } from '../../errors/index.js';
+
 export type AudioConnectionCallback = () => void;
 
 /** The PCM stream descriptor sent once, right after the socket opens. */
@@ -57,7 +59,20 @@ export function createAudioClient(audioUrl: string, callbacks: AudioClientCallba
     }
 
     disconnectedFired = false;
-    const ws = new WebSocket(audioUrl);
+    // `new WebSocket()` throws SYNCHRONOUSLY on a URL the browser refuses — malformed, or
+    // `ws://` from an `https://` page, which some browsers reject as mixed content rather than
+    // merely failing to connect. Unguarded it reached the generic funnel as `UNKNOWN`, while the
+    // HTTP path answers `NETWORK` for the very same class of problem (FLY-503). A dependency,
+    // not a notification: there is no socket to carry on with, so it becomes a typed failure.
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(audioUrl);
+    } catch (e) {
+      throw sdkError('NETWORK', {
+        meta: { detail: e instanceof Error ? e.message : String(e) },
+        cause: e,
+      });
+    }
     ws.binaryType = 'arraybuffer';
     wsRef.current = ws;
 

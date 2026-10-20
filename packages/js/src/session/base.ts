@@ -5,16 +5,28 @@
  * Per-capability session factories (`session/workflows/*`) compose this with their
  * connections and actions; framework bindings subscribe to its state.
  *
- * Contributor note: the wire "lifeline" is the public `session` connection — the main
- * connection. When it is lost (without a workflow-not-found close), every other
- * connection is torn down; the lifecycle status stays `active` and the next `start()`
- * re-attaches. Every state update runs through `finalize` (derived flags) and notifies
- * `onStateChange` only when the state object actually changed.
+ * Contributor notes (never rendered):
+ * - the wire "lifeline" is the public `session` connection — the main connection. When it is
+ *   lost (without a workflow-not-found close), every other connection is torn down; the
+ *   lifecycle status stays `active` and the next `start()` re-attaches. Every state update runs
+ *   through `finalize` (derived flags) and notifies `onStateChange` only when the state object
+ *   actually changed.
+ * - **The transport hands back envelopes, so the resume chain is not built on exceptions any
+ *   more.** `get → create(oldId) → create()` advances by *reading* `errors[0].code`, which is
+ *   both clearer and the only way to keep the whole `errors[]` list: a `throw` carries one
+ *   value. An expected, handled failure on the way through the chain is never written into
+ *   `state.errors` — only the one the session gives up on is.
+ * - **This is where wire events become classes.** `api/` speaks the wire; the conversion
+ *   (`fromEvent` / `toNotice`) belongs on this side of the boundary.
  */
 
 import { createLifelineClient, type LifelineClient } from '../api/ws/lifeline.js';
-import { isSessionNotFound, type SpeechineerError, toSpeechineerError } from '../errors/index.js';
-import type { LifelineSignal } from '../types/sdk/common/lifeline.js';
+import { fromEvent, toNotice } from '../convert/inbound/common/event.js';
+import { RESUMABLE_CODE, type SpeechineerError, toSpeechineerError } from '../errors/index.js';
+import type { SdkLanguage } from '../errors/manifest.js';
+import type { SessionNotice } from '../types/public/common/event.js';
+import type { Envelope, SuccessMetaSdk } from '../types/sdk/common/envelope.js';
+import type { EventSdk, LevelSdk } from '../types/sdk/common/event.js';
 import type { ResolveResponseSdkBase } from '../types/sdk/workflows/base.js';
 import {
   type ConnectionKey,
@@ -24,15 +36,23 @@ import {
   type SessionState,
   withAllConnectionsClosed,
   withConnection,
-  withError,
+  withErrors,
   withFieldValue,
   withFieldValues,
+  withRequestId,
   withSessionId,
   withStatus,
   withTranscript,
   withValuesReset,
 } from './state.js';
 import { createStore, type Store } from './store.js';
+
+/** The notice buckets a successful answer's `meta` can carry, in level order. */
+const NOTICE_BUCKETS = [
+  ['warning', 'warnings'],
+  ['info', 'infos'],
+  ['debug', 'debugs'],
+] as const satisfies readonly (readonly [Exclude<LevelSdk, 'error'>, keyof SuccessMetaSdk])[];
 
 /**
  * What a per-capability session factory hands to the universal session. Callbacks
@@ -44,22 +64,35 @@ import { createStore, type Store } from './store.js';
 export interface WorkflowSessionCoreOptions<C extends ResolveResponseSdkBase> {
   /** The connections this capability uses besides `session` — present in the state from the start. */
   connections: readonly Exclude<ConnectionKey, 'session'>[];
+  /**
+   * The language the SDK renders its **own** messages in, read at call time.
+   *
+   * Everything the service sends is already translated — the session carries the language — so
+   * this is only for the handful of failures raised here: a denied microphone, an unreachable
+   * host, a close frame with no sentence in it.
+   *
+   * A thunk, for the same reason the callbacks are: it is the **session's** language (its own
+   * `uiLanguage`, falling back to the client's), and a binding may change it through
+   * `setOptions` between a stop and the next `start()`. Captured once, a session that switched
+   * to German would keep apologising in English.
+   */
+  language?: () => SdkLanguage;
   /** Values the session starts with (and returns to after `end()`). */
   initialValues?: Readonly<Record<string, unknown>>;
   /** Build the create request + POST it. A `resumeSessionId` (on recovery) is the resume target. */
-  createWorkflowFn: (resumeSessionId?: string) => Promise<C>;
-  /** Fetch a live workflow by id; rejects with a `SESSION_NOT_FOUND` error on a live-miss. */
-  getWorkflowFn: (sessionId: string) => Promise<C>;
+  createWorkflowFn: (resumeSessionId?: string) => Promise<Envelope<C>>;
+  /** Fetch a live workflow by id. A live-miss answers `WORKFLOW_NOT_FOUND`, which drives resume. */
+  getWorkflowFn: (sessionId: string) => Promise<Envelope<C>>;
   /** Build the delete request + POST it. */
-  deleteWorkflowFn: (answer: C) => Promise<void>;
+  deleteWorkflowFn: (answer: C) => Promise<Envelope<null>>;
   /** Attach the capability's connections once the session exists and the main connection is up. */
   onSessionReady?: (answer: C) => void | Promise<void>;
   /** Detach the connections — before a recovery rebuild, on main-connection loss, on `end()`/`dispose()`. */
   onSessionTeardown?: () => void;
   onSessionStart?: (sessionId: string) => void;
   onError?: (error: SpeechineerError) => void;
-  /** Every wire signal (the caller translates it to a `SessionEvent`). */
-  onEvent?: (signal: LifelineSignal) => void;
+  /** One non-terminal notice, already converted. */
+  onNotice?: (notice: SessionNotice) => void;
   onStateChange?: (state: SessionState) => void;
 }
 
@@ -73,8 +106,8 @@ export interface WorkflowSessionCore {
   end: () => Promise<void>;
   /** Detach + close everything without deleting the session (unmount / page teardown). */
   dispose: () => void;
-  /** Send a control signal over the main connection (e.g. `stop_recording_requested`). */
-  sendSignal: (type: string) => void;
+  /** Send a control frame over the main connection (e.g. the request to stop recording). */
+  sendSignal: (code: string) => void;
   /** Report a connection's status (used by the connection adapters). */
   setConnection: (key: ConnectionKey, status: ConnectionStatus) => void;
   /** Record one recognized value. */
@@ -117,11 +150,56 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     update((s) => withAllConnectionsClosed(s));
   };
 
-  // No `phase` argument any more: a failure already knows what it is, and stamping where it
-  // was caught on top only ever produced a second, less accurate classification of it.
+  /** One notice, from either transport, to the callback. */
+  const notice = (level: Exclude<LevelSdk, 'error'>, event: EventSdk): void => opts.onNotice?.(toNotice(level, event));
+
+  /**
+   * Record the whole failure list and report every element.
+   *
+   * Returns `errors[0]` — cause-ordered, so it is the informative one and the one a thrown
+   * value should be.
+   */
+  const recordFailure = (errors: readonly EventSdk[], requestId?: string | null): SpeechineerError => {
+    const converted = errors.map((e) => fromEvent(e));
+    update((s) => withRequestId(withStatus(withErrors(s, converted), 'failed'), requestId));
+    for (const error of converted) opts.onError?.(error);
+    return converted[0] ?? toSpeechineerError(undefined);
+  };
+
+  /** A success's `meta`: keep the request id, fan the advisory notices out per element. */
+  const recordSuccess = (meta: SuccessMetaSdk | undefined): void => {
+    update((s) => withRequestId(s, meta?.request_id));
+    if (!meta) return;
+    for (const [level, bucket] of NOTICE_BUCKETS) {
+      for (const event of (meta[bucket] as EventSdk[] | undefined) ?? []) notice(level, event);
+    }
+  };
+
+  /** The payload, or a throw carrying `errors[0]` once the whole list is recorded. */
+  const unwrap = (envelope: Envelope<C>): C => {
+    if (!envelope.ok) throw recordFailure(envelope.errors, envelope.meta?.request_id);
+    recordSuccess(envelope.meta);
+    return envelope.data;
+  };
+
+  /** Is this failure the one a resume can fix — an id that names no session? */
+  const isResumable = (envelope: Envelope<C>): boolean => !envelope.ok && envelope.errors[0]?.code === RESUMABLE_CODE;
+
+  /**
+   * Record a failure that has not been recorded yet.
+   *
+   * The identity check is load-bearing. `unwrap` already recorded the envelope's **whole** list
+   * and reported every element, and then threw `errors[0]`; a blanket record here would report
+   * that one twice *and* replace the list with just it. So anything already in the state passes
+   * straight through.
+   */
   const failWith = (e: unknown): SpeechineerError => {
-    const err = toSpeechineerError(e);
-    update((s) => withError(withStatus(s, 'failed'), err));
+    const err = toSpeechineerError(e, opts.language?.());
+    if (store.getState().errors.includes(err)) {
+      update((s) => withStatus(s, 'failed'));
+      return err;
+    }
+    update((s) => withErrors(withStatus(s, 'failed'), [err]));
     opts.onError?.(err);
     return err;
   };
@@ -137,15 +215,27 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
         // the session may still exist; the next start() re-attaches.
         if (!notFoundHandled) teardownConnections();
       },
-      onSignal: (sig) => opts.onEvent?.(sig),
-      onTerminal: (err) => {
+      onNotice: notice,
+      onTerminal: (event) => {
         // The session is over — whether it crashed or ran out of allowance, and whether that
-        // arrived as a message or as the close frame of a connection opened too late. The
-        // close that follows tears the connections down; the lifecycle is left to it.
-        update((s) => withError(s, err));
-        opts.onError?.(err);
+        // arrived as a frame or as the close frame of a connection opened too late. The close
+        // that follows tears the connections down.
+        //
+        // **And the status says so.** This used to record the failure and leave the lifecycle
+        // alone, so a dead session still read `active` and `status` could not be trusted on its
+        // own — a caller had to check `errors.length` as well, which nothing told them. `failed`
+        // already means exactly this ("see `errors`; `start()` may be called again"), and it is
+        // what §4.9 asks for when it says a failed creation should behave "exactly as a crashed
+        // workflow does": one terminal status that both arrive at. Which of the two it was stays
+        // legible in `errors[0].code`.
+        const error = fromEvent(event);
+        update((s) => withErrors(withStatus(s, 'failed'), [error]));
+        opts.onError?.(error);
       },
       onWorkflowNotFound: () => recover(),
+      // The thunk, not a value: a close frame can arrive long after the session was created,
+      // and its fallback sentences should be in the language the session is running in *now*.
+      language: opts.language,
     });
     lifeline = client;
     setConnection('session', 'connecting');
@@ -157,7 +247,7 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
   // must cover the connections.
   const activate = async (c: C): Promise<void> => {
     answer = c;
-    update((s) => withStatus(withError(withSessionId(s, c.session_id), null), 'active'));
+    update((s) => withStatus(withErrors(withSessionId(s, c.session_id), []), 'active'));
     opts.onSessionStart?.(c.session_id);
     setupLifeline(c);
     await opts.onSessionReady?.(c);
@@ -181,9 +271,9 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
         // extracted unless the client actually carries a value. Re-attaching without this
         // call was silent, so anything entered between a stop and the next start was lost.
         notFoundHandled = false;
-        update((s) => withStatus(withError(s, null), 'active'));
-        // This branch now awaits a network round trip, so end()/dispose() can land while it
-        // is in flight — the same race the create path below already guards.
+        update((s) => withStatus(withErrors(s, []), 'active'));
+        // This branch awaits a network round trip, so end()/dispose() can land while it is in
+        // flight — the same race the create path below already guards.
         const gen = generation;
         const refreshed = await resumeOrCreate(existing.session_id);
         if (gen !== generation) {
@@ -208,9 +298,9 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
         }
         return;
       }
-      update((s) => withStatus(withError(s, null), 'starting'));
+      update((s) => withStatus(withErrors(s, []), 'starting'));
       const gen = generation;
-      const created = await opts.createWorkflowFn();
+      const created = unwrap(await opts.createWorkflowFn());
       if (gen !== generation) {
         // end()/dispose() happened meanwhile — do not adopt the orphan.
         void opts.deleteWorkflowFn(created).catch(() => {});
@@ -218,8 +308,8 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
       }
       await activate(created);
     } catch (e) {
-      // Reported AND thrown. It still reaches `state.error` and `onError` — a UI bound to the
-      // state needs no try/catch — but `await start()` now rejects instead of resolving on a
+      // Reported AND thrown. It still reaches `state.errors` and `onError` — a UI bound to the
+      // state needs no try/catch — but `await start()` rejects instead of resolving on a
       // session that never started, which is what `await` means everywhere else in JS. The
       // docs claimed this already; swallowing it meant an app that awaited `start()` and then
       // called an action got a second, more confusing failure instead of the real one.
@@ -229,19 +319,21 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     }
   };
 
-  // get → create-on-404 → fresh-on-404 (create owns resume). Non-404 errors propagate.
+  /**
+   * `get` while the session is live, `create` with the old id once it is archived, a fresh
+   * `create` when it is gone entirely.
+   *
+   * Only `WORKFLOW_NOT_FOUND` advances the chain. The narrowing is the point: a 404 also
+   * answers a form that does not exist or a version that was never published, and retrying
+   * those as "the session expired" is what used to report a permanent misconfiguration three
+   * times over and then hide the code that said what was wrong.
+   */
   const resumeOrCreate = async (oldSessionId: string): Promise<C> => {
-    try {
-      return await opts.getWorkflowFn(oldSessionId);
-    } catch (e) {
-      if (!isSessionNotFound(e)) throw e;
-    }
-    try {
-      return await opts.createWorkflowFn(oldSessionId);
-    } catch (e) {
-      if (!isSessionNotFound(e)) throw e;
-    }
-    return opts.createWorkflowFn();
+    const live = await opts.getWorkflowFn(oldSessionId);
+    if (live.ok || !isResumable(live)) return unwrap(live);
+    const archived = await opts.createWorkflowFn(oldSessionId);
+    if (archived.ok || !isResumable(archived)) return unwrap(archived);
+    return unwrap(await opts.createWorkflowFn());
   };
 
   const recover = (): void => {
@@ -281,20 +373,23 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     const c = answer;
     answer = null;
     notFoundHandled = false;
+    // Held, not swallowed, and held in a way that cannot skip the teardown below: the
+    // connections are already down and the app has to reach `idle` whatever the server said.
+    // `await end()` still rejects afterwards, because "the session may still be running on the
+    // server" is something the caller has to be able to learn — it used to be a `console.warn`
+    // nobody could catch. An awaited call that throws (rather than answering an envelope) has to
+    // be caught here too, or the `idle` update below never runs.
     let failure: unknown;
     if (c) {
       try {
-        await opts.deleteWorkflowFn(c);
+        const discarded = await opts.deleteWorkflowFn(c);
+        if (!discarded.ok) failure = fromEvent(discarded.errors[0]);
       } catch (e) {
-        // Held, not swallowed. The local teardown must finish either way — the connections
-        // are already down and the app has to reach `idle` — but `await end()` then rejects,
-        // because "the session may still be running on the server" is something the caller
-        // has to be able to learn. It used to be a `console.warn` nobody could catch.
         failure = e;
       }
     }
     update((s) => withValuesReset(withStatus(withSessionId(s, null), 'idle'), opts.initialValues));
-    // `fail`, not `failWith`: the session really did end, so the status is `idle`. Only the
+    // `fail`, not `failWith`: the session really did end, so the status stays `idle`. Only the
     // server-side delete is in doubt, and that is what the error reports.
     if (failure !== undefined) throw fail(failure);
   };
@@ -305,13 +400,19 @@ export function createWorkflowSession<C extends ResolveResponseSdkBase>(
     closeMainConnection();
   };
 
-  const sendSignal = (event: string): void => {
-    lifeline?.sendSignal({ event, session_id: answer?.session_id ?? '' });
+  /**
+   * Send one client-originated control frame.
+   *
+   * Client frames are `info`-level by contract: they are requests, not failures, and the
+   * service's `CLIENT_SIGNALS` map is keyed by the declaration's UPPER_SNAKE `code`.
+   */
+  const sendSignal = (code: string): void => {
+    lifeline?.sendFrame('info', { code });
   };
 
   const fail = (error: unknown): SpeechineerError => {
-    const err = toSpeechineerError(error);
-    update((s) => withError(s, err));
+    const err = toSpeechineerError(error, opts.language?.());
+    update((s) => withErrors(s, [err]));
     opts.onError?.(err);
     return err;
   };

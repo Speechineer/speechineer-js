@@ -23,6 +23,7 @@ import {
   toSpeechToFormWithTranscriptionGetRequestSdk,
   toSpeechToFormWithTranscriptionResolveRequestSdk,
 } from '../../convert/outbound/workflows/speech-to-form-with-transcription.js';
+import { negotiateSdkLanguage, type SdkLanguage } from '../../errors/manifest.js';
 import { isInlineForm } from '../../features/forms/identity.js';
 import type {
   SpeechToFormAnswer,
@@ -38,6 +39,7 @@ import {
   attachResultsChannel,
   attachTranscriptChannel,
 } from '../channels.js';
+import { safely } from '../safely.js';
 import type { ConnectionKey } from '../state.js';
 import {
   coreCallbackOptions,
@@ -73,6 +75,7 @@ export function createSpeechToFormWorkflowSession(
   const core = createWorkflowSession<SpeechToFormAnswer>({
     connections,
     initialValues: params.initialValues,
+    language: params.language,
     createWorkflowFn: (resumeSessionId) => params.createWorkflow(resumeSessionId),
     getWorkflowFn: (id) => params.getWorkflow(id),
     deleteWorkflowFn: (answer) => params.deleteWorkflow(answer),
@@ -82,13 +85,13 @@ export function createSpeechToFormWorkflowSession(
       if (current.results?.status !== 'open') {
         results?.detach();
         results = attachResultsChannel(core, connection.form_data_ws_url, {
-          onFieldValue: (fieldId, value) => params.onFieldValue?.(fieldId, value),
+          onFieldValue: (fieldId, value) => safely(() => params.onFieldValue?.(fieldId, value)),
         });
       }
       if (params.transcript && 'transcription_ws_url' in connection && current.transcript?.status !== 'open') {
         transcript?.detach();
         transcript = attachTranscriptChannel(core, connection.transcription_ws_url, {
-          onTranscript: (text) => params.onTranscript?.(text),
+          onTranscript: (text) => safely(() => params.onTranscript?.(text)),
         });
       }
       if (!audio) {
@@ -102,7 +105,10 @@ export function createSpeechToFormWorkflowSession(
   });
 
   const stop = (): void => {
-    core.sendSignal('stop_recording_requested');
+    // The declaration's UPPER_SNAKE `code`, not the old lower-case event name: the service's
+    // `CLIENT_SIGNALS` map is keyed by code, and a key it does not recognise is dropped in
+    // silence — which is exactly how this gesture stopped working (§7c-1).
+    core.sendSignal('STOP_RECORDING_REQUESTED');
     audio?.stop();
     audio = null;
   };
@@ -135,27 +141,69 @@ export function createSpeechToFormSession(
   const transcript = Boolean(options.transcript);
   const inline = isInlineForm(options.form);
 
+  /**
+   * The options as the request builders should see them: the session's own `uiLanguage` when it
+   * set one, the client's otherwise.
+   *
+   * Resolved here rather than in the builder because only this layer knows the client. Read at
+   * call time, like every other option, so a binding that refreshes options between a stop and
+   * the next `start()` can switch the session's language — which the service reads as a switch
+   * from that point on.
+   */
+  /**
+   * The language that **travels**: what the session asked for, else what the client asked for,
+   * else nothing — and nothing is meaningful, because Speechineer then negotiates it from the
+   * request rather than being told a guess.
+   */
+  const wireLanguage = (): SdkLanguage | undefined => h.current.uiLanguage ?? client.uiLanguage;
+
+  /**
+   * The language the SDK renders its **own** messages in — always concrete, since nothing else
+   * will translate them. Only this path falls back to the browser.
+   */
+  const language = (): SdkLanguage => wireLanguage() ?? negotiateSdkLanguage();
+
+  const current = (): SpeechToFormOptions => ({ ...h.current, uiLanguage: wireLanguage() });
+
   const session = createSpeechToFormWorkflowSession({
     transcript,
     initialValues: options.initialValues,
+    language,
+    // `wireLanguage()` for every REQUEST, not `language()` (FLY-503): the transport asks
+    // Speechineer for this language with `Accept-Language`, so an unnamed one must stay unnamed
+    // — a resolved guess would override the browser's own q-weighted list. The api layer falls
+    // back for its own sentences at render time.
     createWorkflow: async (resumeSessionId) => {
-      const auth = await client.resolveAuth(h.current.account);
+      // `language()` so a credential failure speaks the SESSION's language, not the
+      // client's — the per-session `uiLanguage` was ignored here before (FLY-503). Resolved,
+      // because nothing but the SDK translates that one.
+      const auth = await client.resolveAuth(h.current.account, language());
       return transcript
         ? createSpeechToFormWithTranscription(
             client.baseUrl,
-            toSpeechToFormWithTranscriptionResolveRequestSdk(h.current, auth, resumeSessionId),
+            toSpeechToFormWithTranscriptionResolveRequestSdk(current(), auth, resumeSessionId),
             inline,
+            wireLanguage(),
           )
-        : createSpeechToForm(client.baseUrl, toSpeechToFormResolveRequestSdk(h.current, auth, resumeSessionId), inline);
+        : createSpeechToForm(
+            client.baseUrl,
+            toSpeechToFormResolveRequestSdk(current(), auth, resumeSessionId),
+            inline,
+            wireLanguage(),
+          );
     },
     getWorkflow: (id) =>
       transcript
-        ? getSpeechToFormWithTranscription(client.baseUrl, toSpeechToFormWithTranscriptionGetRequestSdk(h.current, id))
-        : getSpeechToForm(client.baseUrl, toSpeechToFormGetRequestSdk(h.current, id)),
+        ? getSpeechToFormWithTranscription(
+            client.baseUrl,
+            toSpeechToFormWithTranscriptionGetRequestSdk(current(), id),
+            wireLanguage(),
+          )
+        : getSpeechToForm(client.baseUrl, toSpeechToFormGetRequestSdk(current(), id), wireLanguage()),
     deleteWorkflow: (answer) =>
       transcript
-        ? deleteSpeechToFormWithTranscription(client.baseUrl, { session_id: answer.session_id })
-        : deleteSpeechToForm(client.baseUrl, { session_id: answer.session_id }),
+        ? deleteSpeechToFormWithTranscription(client.baseUrl, { session_id: answer.session_id }, wireLanguage())
+        : deleteSpeechToForm(client.baseUrl, { session_id: answer.session_id }, wireLanguage()),
     ...forwardSessionCallbacks(h),
     ...forwardFormValueCallbacks(h),
     ...forwardTranscriptCallbacks(h),

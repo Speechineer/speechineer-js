@@ -97,6 +97,15 @@ export async function attachAudioChannel(
     url,
     {
       onRecordingStateChange: (isRecording) => core.setConnection('audio', isRecording ? 'open' : 'closed'),
+      // `core.fail` is the seam for "a failure that did not come through start/recover" — it
+      // records the error and reports it to `onError` without claiming the whole session died,
+      // which is right here: the main connection and the service-side session are both still
+      // alive, and `onRecordingStateChange(false)` above has already reported the audio
+      // connection as closed. The app sees a typed error, a closed audio connection and
+      // `isListening === false` — all three true.
+      onFailure: (error) => {
+        core.fail(error);
+      },
     },
     config,
   );

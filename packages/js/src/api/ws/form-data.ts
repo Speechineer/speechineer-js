@@ -13,6 +13,7 @@
  * category, and the message before it carries the failure itself).
  */
 
+import { sdkError } from '../../errors/index.js';
 import type { FormDataExtractionResult } from '../../types/sdk/common/form-data-extraction.js';
 
 export type FieldUpdateCallback = (fieldId: string, value: unknown) => void;
@@ -51,7 +52,20 @@ export function createFormDataClient(formDataUrl: string, callbacks: FormDataCli
     }
 
     disconnectedFired = false;
-    const ws = new WebSocket(formDataUrl);
+    // `new WebSocket()` throws SYNCHRONOUSLY on a URL the browser refuses — malformed, or
+    // `ws://` from an `https://` page, which some browsers reject as mixed content rather than
+    // merely failing to connect. Unguarded it reached the generic funnel as `UNKNOWN`, while the
+    // HTTP path answers `NETWORK` for the very same class of problem (FLY-503). A dependency,
+    // not a notification: there is no socket to carry on with, so it becomes a typed failure.
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(formDataUrl);
+    } catch (e) {
+      throw sdkError('NETWORK', {
+        meta: { detail: e instanceof Error ? e.message : String(e) },
+        cause: e,
+      });
+    }
     wsRef.current = ws;
 
     ws.addEventListener('open', () => callbacks.onConnected?.());

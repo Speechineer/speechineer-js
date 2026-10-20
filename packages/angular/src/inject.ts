@@ -30,8 +30,13 @@ export interface SessionSignals {
   readonly status: Signal<SessionState['status']>;
   /** The id of the running session, or `null`. */
   readonly sessionId: Signal<string | null>;
-  /** The last error, or `null`. */
-  readonly error: Signal<SpeechineerError | null>;
+  /**
+   * Everything that has failed, root cause first — empty when nothing has. Read
+   * `errors()[0]` for the cause to show.
+   */
+  readonly errors: Signal<readonly SpeechineerError[]>;
+  /** The id of the most recent answer, or `null` — quote it when reporting a problem. */
+  readonly requestId: Signal<string | null>;
   /** The latest recognized value of every field, keyed by field id. */
   readonly values: Signal<Readonly<Record<string, unknown>>>;
   /** The spoken text so far. */
@@ -62,7 +67,8 @@ export function bindSession<S extends Bindable>(session: S): S & SessionSignals 
     state: state.asReadonly(),
     status: computed(() => state().status),
     sessionId: computed(() => state().sessionId),
-    error: computed(() => state().error),
+    errors: computed(() => state().errors),
+    requestId: computed(() => state().requestId),
     values: computed(() => state().values),
     transcript: computed(() => state().transcript),
     isListening: computed(() => state().isListening),
@@ -141,7 +147,7 @@ export type InjectSpeechToFormResult = SpeechToFormSession & SessionSignals;
  *   });
  *
  *   // A template cannot catch, and `start()` rejects when the session cannot open — the
- *   // same error is in `voice.error()`, so this only keeps the rejection from going
+ *   // same error is in `voice.errors()`, so this only keeps the rejection from going
  *   // unhandled.
  *   talk() {
  *     void this.voice.start().catch(() => {});

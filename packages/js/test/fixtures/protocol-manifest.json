@@ -1,0 +1,2692 @@
+{
+  "codes": {
+    "ACCOUNT_INACTIVE": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "That account is not active. Reactivate it in the portal, or name a different account in the auth token.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Dieses Konto ist nicht aktiv.",
+        "en": "This account is not active."
+      }
+    },
+    "ACCOUNT_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No account answers that key in this workspace.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieses Konto gibt es nicht.",
+        "en": "That account does not exist."
+      }
+    },
+    "ACCOUNT_QUOTA_EXCEEDED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "This account has used {used} of its {limit} units for this {layer}. The ceiling is per account, so other accounts in the workspace are unaffected.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Dieses Konto hat alle {limit} Einheiten verbraucht.",
+        "en": "This account has used all {limit} of its units."
+      }
+    },
+    "ACCOUNT_REQUIRED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That auth token names no account. Usage and quotas are counted per account, so one has to be named even when your application has a single user.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "ACCOUNT_STATUS_EVENT_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Account status events record what was true when, so they are append-only.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Der Statusverlauf eines Kontos kann nicht ge\u00e4ndert werden.",
+        "en": "Account status history cannot be changed."
+      }
+    },
+    "ACTION_PRECONDITION_UNMET": {
+      "audience": "public",
+      "close_code": 4409,
+      "dev_message": "{endpoint} needs {precondition} first, so it did nothing. The session is unaffected \u2014 wait for that step and call it again.",
+      "level": "error",
+      "meta": [
+        "endpoint",
+        "precondition"
+      ],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Das ist noch nicht bereit. Bitte versuchen Sie es in einem Moment erneut.",
+        "en": "This is not ready yet. Please try again in a moment."
+      }
+    },
+    "ACTION_TIMEOUT": {
+      "audience": "public",
+      "close_code": 4504,
+      "dev_message": "That action did not finish within the time this workflow allows. The session is still alive \u2014 retry the action.",
+      "level": "error",
+      "meta": [],
+      "status": 504,
+      "type": "timeout",
+      "user_message": {
+        "de": "Das hat zu lange gedauert. Bitte versuchen Sie es erneut.",
+        "en": "That took too long. Please try again."
+      }
+    },
+    "ADAPTER_CONFIG_NOT_ALLOWED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "That adapter configuration cannot be used for this provider slot.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "ADAPTER_CONFIG_NOT_ENTITLED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "That adapter configuration is not included in this plan. Choose one the plan includes, or leave it unset to take the default.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "ADAPTER_CONFIG_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "No adapter configuration answers that key.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Konfiguration gibt es nicht.",
+        "en": "That configuration does not exist."
+      }
+    },
+    "ALREADY_PUBLISHED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "That version is already published.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Version ist bereits ver\u00f6ffentlicht.",
+        "en": "That version is already published."
+      }
+    },
+    "API_KEY_INVALID": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That API key cannot be used. It is unknown, no longer active, or past its expiry \u2014 deliberately one answer for all three, so this response cannot be used to probe which keys exist. Check the key in the portal.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung konnte sich nicht anmelden. Bitte wenden Sie sich an die Person, die sie eingerichtet hat.",
+        "en": "This application could not sign in. Please contact whoever set it up."
+      }
+    },
+    "API_KEY_QUOTA_EXCEEDED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "The key used for this request has spent {used} of its {limit} units for this {layer}. The ceiling belongs to the key, so another key in the same workspace may still have budget.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Der f\u00fcr diese Anfrage verwendete Schl\u00fcssel hat alle {limit} Einheiten verbraucht.",
+        "en": "The key used for this request has used all {limit} of its units."
+      }
+    },
+    "API_KEY_UNSIGNED_UNDER_SIGNED_POLICY": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "This workspace requires signed tokens, so an unsigned key would be unable to authenticate at all. Create a signed key, or lift the requirement first.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Dieser Workspace erfordert signierte Schl\u00fcssel.",
+        "en": "This workspace requires signed keys."
+      }
+    },
+    "AUDIO_CHUNK_INVALID": {
+      "audience": "public",
+      "close_code": 4500,
+      "dev_message": "An audio chunk was not a size transcription can accept. Check the frame duration and the sample rate the session was created with.",
+      "level": "error",
+      "meta": [],
+      "status": 500,
+      "type": "runtime",
+      "user_message": {
+        "de": "Die Aufnahme wurde unerwartet beendet. Bitte starten Sie erneut.",
+        "en": "The recording stopped unexpectedly. Please start again."
+      }
+    },
+    "AUDIT_LOG_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Audit entries are append-only. A log that can be edited is not a log.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Eintr\u00e4ge im Audit-Log k\u00f6nnen nicht ge\u00e4ndert werden.",
+        "en": "Audit log entries cannot be changed."
+      }
+    },
+    "AUTH_ENVELOPE_INVALID": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That auth token could not be verified. Check the signature, the audience and the expiry \u2014 and that the clock on the machine minting it is right.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Sitzung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+        "en": "This session could not be started. Please try again."
+      }
+    },
+    "AUTH_ENVELOPE_LIFETIME_EXCEEDED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That auth token's lifetime is longer than this workspace allows. Mint short-lived tokens per session instead of long-lived ones.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "AUTH_ENVELOPE_REPLAYED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That auth token has already been used. Each token carries a one-time id, so mint a fresh one per session rather than reusing one.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Sitzung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+        "en": "This session could not be started. Please try again."
+      }
+    },
+    "AUTH_MODE_MISMATCH": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That token does not match the key's auth mode. A signed key may present only a signed token and an unsigned key only an unsigned one \u2014 the mode selects, it does not widen.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "AUTH_REQUIRED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "This request carried no auth block at all. Every session call needs one, even where the workspace accepts unsigned tokens.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "AUTH_SIGNATURE_REQUIRED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "This workspace accepts only signed auth tokens. Sign the token with one of the workspace's active signing keys, or turn the requirement off in the portal.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "BAD_REQUEST": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "The request was refused before it reached a route \u2014 a disallowed host, or a shape the server rejects outright.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anfrage konnte nicht verarbeitet werden.",
+        "en": "That request could not be processed."
+      }
+    },
+    "BILLING_ADDRESS_MISSING": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "A billing address is required before this can proceed.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Eine Rechnungsadresse ist erforderlich.",
+        "en": "A billing address is required."
+      }
+    },
+    "BILLING_ADDRESS_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No billing address is on file for this organization.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Es ist keine Rechnungsadresse hinterlegt.",
+        "en": "No billing address is on file."
+      }
+    },
+    "BILLING_RUN_COMPUTED_INVALID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This billing run produced figures that failed their own consistency check, so nothing was written. The inputs need looking at before it can run again.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Abrechnungslauf hat keine g\u00fcltigen Zahlen ergeben.",
+        "en": "This billing run did not produce valid figures."
+      }
+    },
+    "BLOG_AUTHOR_IN_USE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Posts still carry this byline, so deleting the author would leave them unattributed. Deactivate it instead.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Autorenangabe wird von Beitr\u00e4gen verwendet \u2014 deaktivieren Sie sie stattdessen.",
+        "en": "This author is used by posts \u2014 deactivate it instead."
+      }
+    },
+    "BLOG_AUTHOR_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No author answers that id.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Autorin oder diesen Autor gibt es nicht.",
+        "en": "That author does not exist."
+      }
+    },
+    "BLOG_CONTENT_INVALID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "The post content is not a valid document.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Der Beitragsinhalt konnte nicht gelesen werden.",
+        "en": "The post content could not be read."
+      }
+    },
+    "BLOG_CONTENT_TOO_LARGE": {
+      "audience": "console",
+      "close_code": 4413,
+      "dev_message": "The post content is a valid document, and larger than this route will store.",
+      "level": "error",
+      "meta": [],
+      "status": 413,
+      "type": "too_large",
+      "user_message": {
+        "de": "Dieser Beitrag ist zu lang.",
+        "en": "This post is too long."
+      }
+    },
+    "BLOG_EN_REQUIRED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "English is the canonical translation: a post cannot be published without it, and a published post cannot lose it.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Ein ver\u00f6ffentlichter Beitrag ben\u00f6tigt seine englische \u00dcbersetzung.",
+        "en": "A published post needs its English translation."
+      }
+    },
+    "BLOG_IMAGE_TOO_LARGE": {
+      "audience": "console",
+      "close_code": 4413,
+      "dev_message": "That image is a supported type, and larger than this route will store.",
+      "level": "error",
+      "meta": [],
+      "status": 413,
+      "type": "too_large",
+      "user_message": {
+        "de": "Dieses Bild ist zu gro\u00df.",
+        "en": "That image is too large."
+      }
+    },
+    "BLOG_IMAGE_UNSUPPORTED": {
+      "audience": "console",
+      "close_code": 4415,
+      "dev_message": "That file is not an image type the blog stores.",
+      "level": "error",
+      "meta": [],
+      "status": 415,
+      "type": "unsupported_media",
+      "user_message": {
+        "de": "Diese Datei ist kein unterst\u00fctztes Bild.",
+        "en": "That file is not a supported image."
+      }
+    },
+    "BLOG_LANGUAGE_UNSUPPORTED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That language is not one the blog publishes in.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Sprache wird nicht unterst\u00fctzt.",
+        "en": "That language is not supported."
+      }
+    },
+    "BLOG_POST_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No post answers that slug or id.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diesen Beitrag gibt es nicht.",
+        "en": "That post does not exist."
+      }
+    },
+    "BLOG_SLUG_TAKEN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That slug already belongs to another post.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Slug wird bereits verwendet.",
+        "en": "That slug is already in use."
+      }
+    },
+    "BLOG_TRANSLATION_MISSING": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "This post has no translation in that language.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese \u00dcbersetzung gibt es nicht.",
+        "en": "That translation does not exist."
+      }
+    },
+    "CLIENT_DISCONNECTED": {
+      "dev_message": "The client's connection closed. Nothing is sent for this \u2014 the only peer who could receive it is the one that left \u2014 but the session reacts to it and the log records it.",
+      "level": "info",
+      "meta": [],
+      "type": "lifecycle",
+      "user_message": {
+        "de": "Die Verbindung wurde geschlossen.",
+        "en": "The connection was closed."
+      }
+    },
+    "CLIENT_FRAME_UNREADABLE": {
+      "dev_message": "A frame on the session connection was ignored ({reason}): {code}. The session is unaffected, but whatever that frame asked for did not happen. This service accepts: {accepted}.",
+      "level": "warning",
+      "meta": [
+        "reason",
+        "code",
+        "accepted"
+      ],
+      "type": "unsupported",
+      "user_message": {
+        "de": "Diese Aktion konnte nicht ausgef\u00fchrt werden.",
+        "en": "That action could not be completed."
+      }
+    },
+    "CLIENT_INACTIVE": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "The organization this credential belongs to is suspended or deleted, so every request from it is refused regardless of which key made it.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Diese Organisation ist nicht aktiv.",
+        "en": "This organization is not active."
+      }
+    },
+    "CLIENT_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No organization answers that id.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Organisation gibt es nicht.",
+        "en": "That organization does not exist."
+      }
+    },
+    "CODE_DEFINED_CONFIG_NOT_APPLICABLE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That configuration does not apply to a form whose fields are declared in code.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Einstellung gilt f\u00fcr dieses Formular nicht.",
+        "en": "That setting does not apply to this form."
+      }
+    },
+    "CODE_VALUE_OVERRIDDEN": {
+      "dev_message": "The form's definition in the portal overrode the configuration supplied in code for {field}. The portal's definition is authoritative \u2014 remove it from your code, or change it in the portal.",
+      "level": "warning",
+      "meta": [
+        "field"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Eine der Einstellungen f\u00fcr dieses Formular wurde angepasst.",
+        "en": "One of the settings for this form was adjusted."
+      }
+    },
+    "COMPONENT_ARCHIVED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Archiving is final. An archived component stays readable so the record keeps making sense, but nothing about it can be changed and it cannot be brought back.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Dies ist archiviert und kann nicht mehr ge\u00e4ndert werden.",
+        "en": "This is archived and can no longer be changed."
+      }
+    },
+    "COMPONENT_IN_USE": {
+      "audience": "public",
+      "close_code": 4409,
+      "dev_message": "This has been used, and usage or billing records still reference it, so it can no longer be deleted. Deactivate or archive it instead \u2014 the records keep reading.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Dies wurde bereits verwendet und kann nicht mehr gel\u00f6scht werden.",
+        "en": "This has been used and can no longer be deleted."
+      }
+    },
+    "CONCURRENCY_LIMIT_REACHED": {
+      "audience": "public",
+      "close_code": 4429,
+      "dev_message": "This key already has as many sessions running as it may. Nothing is used up \u2014 end one, or wait for one to finish, and retry.",
+      "level": "error",
+      "meta": [],
+      "status": 429,
+      "type": "rate_limit",
+      "user_message": {
+        "de": "Es laufen zu viele Sitzungen. Bitte versuchen Sie es in K\u00fcrze erneut.",
+        "en": "Too many sessions are running. Please try again shortly."
+      }
+    },
+    "CONFIG_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "The configuration resolved for this session did not validate, so nothing was started. Check the form's configuration in the portal.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "CONNECTOR_PARAM_MISSING": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "The selected connector does not provide every parameter this model requires.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Bei der ausgew\u00e4hlten Verbindung fehlt eine erforderliche Einstellung.",
+        "en": "The selected connection is missing a required setting."
+      }
+    },
+    "CSRF_FAILED": {
+      "audience": "console",
+      "close_code": 4403,
+      "dev_message": "CSRF verification failed. Fetch a fresh token and retry \u2014 this is a stale page, not a permission problem.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Bitte laden Sie die Seite neu und versuchen Sie es erneut.",
+        "en": "Please refresh the page and try again."
+      }
+    },
+    "DEMO_PAUSED": {
+      "audience": "console",
+      "close_code": 4503,
+      "dev_message": "The public demo is switched off, or the workspace behind it is no longer there.",
+      "level": "error",
+      "meta": [],
+      "status": 503,
+      "type": "unavailable",
+      "user_message": {
+        "de": "Die Demo ist derzeit pausiert.",
+        "en": "The demo is paused right now."
+      }
+    },
+    "DEPRECATION_BLOCKED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This model is still referenced, so it cannot be deprecated yet.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell wird noch verwendet und kann nicht als veraltet markiert werden.",
+        "en": "This model is still in use and cannot be deprecated."
+      }
+    },
+    "DUPLICATE_FIELD_ID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "Two fields cannot share an id.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Zwei Felder k\u00f6nnen nicht dieselbe ID haben.",
+        "en": "Two fields cannot share an id."
+      }
+    },
+    "EMAIL_ALREADY_USED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "That email address already belongs to a login.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese E-Mail-Adresse wird bereits verwendet.",
+        "en": "That email address is already in use."
+      }
+    },
+    "EMISSION_ID_REQUIRED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "An emission id is required: it is what makes a retried usage post idempotent instead of double-charging.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Verbrauch konnte nicht erfasst werden.",
+        "en": "That usage could not be recorded."
+      }
+    },
+    "ENDPOINT_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "No endpoint answers that path. Check the method and the path against the docs.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Adresse gibt es nicht.",
+        "en": "That address does not exist."
+      }
+    },
+    "EXTRACTION_DOWN": {
+      "dev_message": "Field extraction failed an attempt and is retrying \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Values already recognized are kept.",
+      "level": "warning",
+      "meta": [
+        "retry_attempt",
+        "max_retries",
+        "retry_delay"
+      ],
+      "type": "recovery",
+      "user_message": {
+        "de": "Wird noch verarbeitet \u2014 einen Moment.",
+        "en": "Still working on that \u2014 one moment."
+      }
+    },
+    "EXTRACTION_FAILED": {
+      "audience": "public",
+      "close_code": 4500,
+      "dev_message": "Field extraction stopped and could not be restarted within its retry budget, so the session ended. Values already recognized are kept.",
+      "level": "error",
+      "meta": [],
+      "status": 500,
+      "type": "runtime",
+      "user_message": {
+        "de": "Der Vorgang wurde vorzeitig beendet. Ihre bisherigen Angaben sind gespeichert.",
+        "en": "This stopped before it finished. Your answers so far have been kept."
+      }
+    },
+    "FEATURE_CONFIG_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "The feature configuration is incomplete or does not validate.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FEATURE_FIELD_CONFIG_REQUIRED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "This feature needs a field configuration \u2014 either a form key to resolve, or the fields declared in code.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FEATURE_NOT_AVAILABLE": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "This feature is not included in the plan this organization is on. Nothing in the request can enable it \u2014 the plan has to change.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Diese Funktion ist in Ihrem Tarif nicht enthalten.",
+        "en": "This feature is not included in your plan."
+      }
+    },
+    "FEATURE_SETTING_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} is not a valid value for this setting.",
+      "level": "error",
+      "meta": [
+        "field"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FEATURE_SETTING_NOT_ALLOWED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} is not a setting this feature defines.",
+      "level": "error",
+      "meta": [
+        "field"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FEEDBACK_DELIVERY_FAILED": {
+      "audience": "console",
+      "close_code": 4503,
+      "dev_message": "The mail provider refused or suppressed the message, so nothing was delivered.",
+      "level": "error",
+      "meta": [],
+      "status": 503,
+      "type": "unavailable",
+      "user_message": {
+        "de": "Ihr Feedback konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+        "en": "Your feedback could not be sent. Please try again."
+      }
+    },
+    "FEEDBACK_VOICE_PAUSED": {
+      "audience": "console",
+      "close_code": 4503,
+      "dev_message": "The workspace behind voice feedback is not active, so dictation cannot start.",
+      "level": "error",
+      "meta": [],
+      "status": 503,
+      "type": "unavailable",
+      "user_message": {
+        "de": "Die Spracheingabe ist pausiert. Sie k\u00f6nnen Ihre Nachricht weiterhin eingeben.",
+        "en": "Voice input is paused. You can still type your message."
+      }
+    },
+    "FIELD_ENUM_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be one of: {options}.",
+      "level": "error",
+      "meta": [
+        "field",
+        "options"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "W\u00e4hlen Sie eine der folgenden Optionen: {options}.",
+        "en": "Choose one of: {options}."
+      }
+    },
+    "FIELD_ID_INVALID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That field id is not valid.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Feld-ID ist nicht g\u00fcltig.",
+        "en": "That field id is not valid."
+      }
+    },
+    "FIELD_NOT_IN_VERSION": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That field is not part of this version.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Feld geh\u00f6rt nicht zu dieser Version.",
+        "en": "That field is not part of this version."
+      }
+    },
+    "FIELD_PATTERN_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must match {pattern}.",
+      "level": "error",
+      "meta": [
+        "field",
+        "pattern"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Wert hat nicht das richtige Format.",
+        "en": "This value is not in the right format."
+      }
+    },
+    "FIELD_REQUIRED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} is required.",
+      "level": "error",
+      "meta": [
+        "field"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dies ist erforderlich.",
+        "en": "This is required."
+      }
+    },
+    "FIELD_TOO_LARGE": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be at most {limit}.",
+      "level": "error",
+      "meta": [
+        "field",
+        "limit"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dies darf h\u00f6chstens {limit} sein.",
+        "en": "This must be at most {limit}."
+      }
+    },
+    "FIELD_TOO_LONG": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be at most {limit} characters.",
+      "level": "error",
+      "meta": [
+        "field",
+        "limit"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dies darf h\u00f6chstens {limit} Zeichen lang sein.",
+        "en": "This must be {limit} characters or fewer."
+      }
+    },
+    "FIELD_TOO_SHORT": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be at least {limit} characters.",
+      "level": "error",
+      "meta": [
+        "field",
+        "limit"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dies muss mindestens {limit} Zeichen lang sein.",
+        "en": "This must be at least {limit} characters."
+      }
+    },
+    "FIELD_TOO_SMALL": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be at least {limit}.",
+      "level": "error",
+      "meta": [
+        "field",
+        "limit"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dies muss mindestens {limit} sein.",
+        "en": "This must be at least {limit}."
+      }
+    },
+    "FIELD_TYPE_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} must be {expected}.",
+      "level": "error",
+      "meta": [
+        "field",
+        "expected"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Wert hat nicht das richtige Format.",
+        "en": "This value is not in the right format."
+      }
+    },
+    "FORCE_STOP_REQUESTED": {
+      "dev_message": "The {scope} scope was force-stopped: nothing waits for components to finish. This is the teardown path a terminal failure takes.",
+      "level": "debug",
+      "meta": [
+        "scope"
+      ],
+      "type": "internal",
+      "user_message": {
+        "de": "Wird beendet.",
+        "en": "Stopping."
+      }
+    },
+    "FORM_FIELD_INVALID": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "{field} is not a usable field declaration.",
+      "level": "error",
+      "meta": [
+        "field"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FORM_KEY_PORTAL_OWNED": {
+      "audience": "public",
+      "close_code": 4409,
+      "dev_message": "That form key already belongs to a form defined in the portal, which a code-defined form may not overwrite. Choose another key \u2014 re-sending this one will not help.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "FORM_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "No form answers that key in this workspace. A form key is scoped to one workspace, so a key that works elsewhere will not resolve here.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieses Formular gibt es nicht.",
+        "en": "That form does not exist."
+      }
+    },
+    "FORM_QUOTA_EXCEEDED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "This form has used {used} of its {limit} units for this {layer}. The ceiling belongs to the form, so other forms in the workspace may still have budget.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Dieses Formular hat alle {limit} Einheiten verbraucht.",
+        "en": "This form has used all {limit} of its units."
+      }
+    },
+    "FORM_VERSION_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A published version is frozen: sessions have already run against it. Create a new draft from it instead.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Eine ver\u00f6ffentlichte Version kann nicht mehr bearbeitet werden.",
+        "en": "A published version can no longer be edited."
+      }
+    },
+    "FORM_VERSION_LANGUAGE_UNAVAILABLE": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "That form version does not declare support for the language asked for.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Formular ist in dieser Sprache nicht verf\u00fcgbar.",
+        "en": "This form is not available in that language."
+      }
+    },
+    "FORM_VERSION_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No version of this form answers that key.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Formularversion gibt es nicht.",
+        "en": "That form version does not exist."
+      }
+    },
+    "FORM_VERSION_NOT_PUBLISHED": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "That version exists but is not published, so no session may run it. Publish it, or omit the version to get the one that is live.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Version des Formulars ist noch nicht verf\u00fcgbar.",
+        "en": "That version of the form is not available yet."
+      }
+    },
+    "INTERNAL_ERROR": {
+      "audience": "root",
+      "close_code": 4500,
+      "dev_message": "The request could not be completed. This is a fault on Speechineer's side, not in the request \u2014 quote the request id when reporting it.",
+      "level": "error",
+      "meta": [],
+      "status": 500,
+      "type": "service",
+      "user_message": {
+        "de": "Auf unserer Seite ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        "en": "Something went wrong on our side. Please try again."
+      }
+    },
+    "INTERNAL_IDENTITY_PROTECTED": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "That account is reserved and cannot be asserted with this key. Name one of your own accounts instead.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "INVALID_CREDENTIALS": {
+      "audience": "console",
+      "close_code": 4401,
+      "dev_message": "Those credentials were refused \u2014 deliberately one answer for a wrong password, an unknown address and an account that signs in through a provider instead.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Angaben sind nicht korrekt.",
+        "en": "Those details are not correct."
+      }
+    },
+    "INVALID_IMPORT": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That import file could not be read.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Datei konnte nicht gelesen werden.",
+        "en": "That file could not be read."
+      }
+    },
+    "INVALID_REFRESH_TOKEN": {
+      "audience": "console",
+      "close_code": 4401,
+      "dev_message": "That session can no longer be refreshed. It has expired, been rotated, or been revoked by a password change.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Ihre Sitzung ist beendet. Bitte melden Sie sich erneut an.",
+        "en": "Your session has ended. Please sign in again."
+      }
+    },
+    "INVALID_TOKEN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That one-time link is unknown or has expired. Each link may be used once; request a fresh one.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Link ist ung\u00fcltig oder abgelaufen.",
+        "en": "That link is invalid or has expired."
+      }
+    },
+    "INVOICE_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No invoice answers that id for this organization.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Rechnung gibt es nicht.",
+        "en": "That invoice does not exist."
+      }
+    },
+    "LAST_OWNER": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "An organization must keep at least one owner. Make someone else an owner first, then remove this one.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Eine Organisation muss mindestens eine Besitzerin oder einen Besitzer behalten.",
+        "en": "An organization must keep at least one owner."
+      }
+    },
+    "LAST_VERSION": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A form must keep at least one version. Archive the form instead.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Ein Formular muss mindestens eine Version behalten.",
+        "en": "A form must keep at least one version."
+      }
+    },
+    "LAYER_TRIGGERED": {
+      "dev_message": "Layer {layer_index} of the workflow graph started.",
+      "level": "debug",
+      "meta": [
+        "layer_index"
+      ],
+      "type": "progress",
+      "user_message": {
+        "de": "Der n\u00e4chste Schritt wird ausgef\u00fchrt.",
+        "en": "Working on the next step."
+      }
+    },
+    "LIFECYCLE_INVARIANT_BROKEN": {
+      "audience": "public",
+      "close_code": 4500,
+      "dev_message": "The session hit a broken internal invariant and stopped. Nothing in the request caused it and nothing about the request will avoid it \u2014 quote the request id.",
+      "level": "error",
+      "meta": [],
+      "status": 500,
+      "type": "service",
+      "user_message": {
+        "de": "Auf unserer Seite ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        "en": "Something went wrong on our side. Please try again."
+      }
+    },
+    "MAIL_TEMPLATE_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No mail template answers that name.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese E-Mail-Vorlage gibt es nicht.",
+        "en": "That mail template does not exist."
+      }
+    },
+    "METHOD_NOT_ALLOWED": {
+      "audience": "public",
+      "close_code": 4405,
+      "dev_message": "That path exists but does not accept this method. Check the verb against the docs \u2014 the URL is right.",
+      "level": "error",
+      "meta": [],
+      "status": 405,
+      "type": "method",
+      "user_message": {
+        "de": "Diese Anfrage konnte nicht verarbeitet werden.",
+        "en": "That request could not be processed."
+      }
+    },
+    "MODEL_DEPRECATED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That model is deprecated. Use the model named as its replacement.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell ist veraltet.",
+        "en": "That model is deprecated."
+      }
+    },
+    "MODEL_INACTIVE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That model is not active and cannot be selected.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell ist nicht aktiv.",
+        "en": "That model is not active."
+      }
+    },
+    "MODEL_NOT_ENABLED_FOR_PLAN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That model is not enabled for this plan.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell ist f\u00fcr diesen Tarif nicht aktiviert.",
+        "en": "That model is not enabled for this plan."
+      }
+    },
+    "MODEL_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "No model answers that id.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell gibt es nicht.",
+        "en": "That model does not exist."
+      }
+    },
+    "MODEL_PROVIDER_MISMATCH": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That model does not belong to this provider slot.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Modell geh\u00f6rt nicht zu diesem Provider.",
+        "en": "That model does not belong to this provider."
+      }
+    },
+    "NOT_ACCEPTABLE": {
+      "audience": "public",
+      "close_code": 4406,
+      "dev_message": "Nothing this endpoint can return matches the Accept header that was sent. Ask for JSON, or send no Accept header at all.",
+      "level": "error",
+      "meta": [],
+      "status": 406,
+      "type": "not_acceptable",
+      "user_message": {
+        "de": "Diese Anfrage konnte nicht verarbeitet werden.",
+        "en": "That request could not be processed."
+      }
+    },
+    "NOT_AUTHENTICATED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "No usable credential was presented on a request that requires one.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Bitte melden Sie sich an und versuchen Sie es erneut.",
+        "en": "Please sign in and try again."
+      }
+    },
+    "NOT_A_DRAFT": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "That version is not a draft, and this action only applies to a draft.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Version ist kein Entwurf.",
+        "en": "That version is not a draft."
+      }
+    },
+    "NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "Nothing answers that identifier.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieses Element gibt es nicht.",
+        "en": "That item does not exist."
+      }
+    },
+    "NOT_PUBLISHED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "That version is not published, and this action needs a published one.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Version ist nicht ver\u00f6ffentlicht.",
+        "en": "That version is not published."
+      }
+    },
+    "NO_ACTIVE_PLAN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This organization has no active plan.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Kunde hat keinen aktiven Tarif.",
+        "en": "This client has no active plan."
+      }
+    },
+    "NO_ACTIVE_SUBSCRIPTION": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This organization has no active subscription.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Kunde hat kein aktives Abonnement.",
+        "en": "This client has no active subscription."
+      }
+    },
+    "NO_BILLING_CYCLE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This organization has no billing cycle to schedule against.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "F\u00fcr diesen Kunden gibt es keinen Abrechnungszeitraum als Bezug.",
+        "en": "This client has no billing cycle to schedule against."
+      }
+    },
+    "NO_ORGANIZATION": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "No organization is associated with this login.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Mit dieser Anmeldung ist keine Organisation verkn\u00fcpft.",
+        "en": "No organization is associated with this login."
+      }
+    },
+    "NO_PENDING_PLAN_SWITCH": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "No plan switch is scheduled, so there is none to cancel or apply.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Es ist kein Tarifwechsel geplant.",
+        "en": "No plan switch is scheduled."
+      }
+    },
+    "NO_PREPAID_PRICE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This plan has no prepaid price, so units cannot be bought on it.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Tarif hat keinen Prepaid-Preis.",
+        "en": "This plan has no prepaid price."
+      }
+    },
+    "NO_PUBLISHED_VERSION_FOR_LANGUAGE": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "This form has no published version in {language}. Publish one, or start the session in a language the form already supports.",
+      "level": "error",
+      "meta": [
+        "language"
+      ],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieses Formular ist in dieser Sprache nicht verf\u00fcgbar.",
+        "en": "This form is not available in that language."
+      }
+    },
+    "NO_REFRESH_TOKEN": {
+      "audience": "console",
+      "close_code": 4401,
+      "dev_message": "No session was presented, so there is nothing to refresh.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Bitte melden Sie sich erneut an.",
+        "en": "Please sign in again."
+      }
+    },
+    "OPERATOR_PROTECTED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Operator accounts are not managed through an organization.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Betreiberkonten k\u00f6nnen hier nicht ge\u00e4ndert werden.",
+        "en": "Operator accounts cannot be changed here."
+      }
+    },
+    "OPTIONS_REQUIRED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This field type needs a list of options.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Feldtyp ben\u00f6tigt Optionen.",
+        "en": "This field type needs options."
+      }
+    },
+    "OVERSPEND_CEILING_EXCEEDED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That overspend limit is above the ceiling this plan allows.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Limit liegt \u00fcber dem, was dieser Tarif zul\u00e4sst.",
+        "en": "That limit is above what this plan allows."
+      }
+    },
+    "OVERSPEND_FORBIDDEN_BY_PLAN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This plan does not allow overspend, so no limit can be set for it.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Tarif erlaubt keinen \u00dcberverbrauch.",
+        "en": "This plan does not allow overspend."
+      }
+    },
+    "OVERSPEND_LIMIT_REACHED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "Usage beyond the plan's included units has reached the agreed overspend limit ({used} of {limit}). Raising the limit is a billing decision, not a configuration one.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Das Ausgabenlimit f\u00fcr diesen Tarif ist erreicht.",
+        "en": "The spending limit for this plan has been reached."
+      }
+    },
+    "PARSE_ERROR": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "The body could not be parsed as the declared content type. Check for truncated JSON or a Content-Type that does not match what was sent.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anfrage konnte nicht verarbeitet werden.",
+        "en": "That request could not be processed."
+      }
+    },
+    "PASSWORD_CHANGE_REQUIRED": {
+      "audience": "console",
+      "close_code": 4403,
+      "dev_message": "A password change is outstanding, so no other route is served for this login.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Bitte legen Sie ein neues Passwort fest, bevor Sie fortfahren.",
+        "en": "Please set a new password before continuing."
+      }
+    },
+    "PASSWORD_NOT_AVAILABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "This account signs in through a provider, so it has no password here to change.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "F\u00fcr dieses Konto sind keine Passwort\u00e4nderungen m\u00f6glich.",
+        "en": "Password changes are not available for this account."
+      }
+    },
+    "PAYMENT_METHOD_MISSING": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "A payment method is required before this can proceed.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Eine Zahlungsmethode ist erforderlich.",
+        "en": "A payment method is required."
+      }
+    },
+    "PAYMENT_METHOD_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No payment method answers that id for this organization.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Zahlungsmethode gibt es nicht.",
+        "en": "That payment method does not exist."
+      }
+    },
+    "PERMISSION_DENIED": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "The credential is valid but does not grant access to this.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Sie haben keinen Zugriff darauf.",
+        "en": "You do not have access to this."
+      }
+    },
+    "PERSON_FROZEN": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "This person has been offboarded. The record is kept frozen \u2014 name and email included \u2014 so that everything they did still reads correctly.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Der Datensatz dieser Person ist eingefroren und kann nicht ge\u00e4ndert werden.",
+        "en": "This person's record is frozen and cannot be changed."
+      }
+    },
+    "PLAN_ALLOWANCE_EXHAUSTED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "The plan's included units for this cycle are spent ({used} of {limit}) and no prepaid balance remains. Buy units, or wait for the next billing cycle.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Alle {limit} in diesem Abrechnungszeitraum enthaltenen Einheiten sind verbraucht.",
+        "en": "All {limit} units included this cycle have been used."
+      }
+    },
+    "PLAN_HAS_SUBSCRIBERS": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Organizations are still on this plan. Move them to another one first.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Auf diesem Tarif befinden sich noch Kunden. Wechseln Sie sie zuerst.",
+        "en": "Clients are still on this plan. Move them to another plan first."
+      }
+    },
+    "PLAN_INCLUDED_RATE_ABOVE_PREPAID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "Included units cannot cost more per unit than prepaid units.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Enthaltene Einheiten d\u00fcrfen pro Einheit nicht mehr kosten als Prepaid-Einheiten.",
+        "en": "Included units cannot cost more per unit than prepaid units."
+      }
+    },
+    "PLAN_NOT_AVAILABLE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That plan is not available for selection.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Tarif ist nicht verf\u00fcgbar.",
+        "en": "That plan is not available."
+      }
+    },
+    "PLAN_PREPAID_RATE_ABOVE_OVERAGE": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "The prepaid rate cannot be above the overage rate.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Der Prepaid-Preis darf nicht \u00fcber dem \u00dcberverbrauchspreis liegen.",
+        "en": "The prepaid rate cannot be above the overage rate."
+      }
+    },
+    "PLAN_SWITCH_ALREADY_SCHEDULED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A switch to that plan version is already scheduled. Cancel it first.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Ein Wechsel zu dieser Tarifversion ist bereits geplant.",
+        "en": "A switch to that plan version is already scheduled."
+      }
+    },
+    "PLAN_SWITCH_CUSTOM_BILLING_FLIP": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That target would change how this organization is billed, which a switch may not do.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Tarif w\u00fcrde die Art der Abrechnung dieses Kunden \u00e4ndern.",
+        "en": "That plan would change how this client is billed."
+      }
+    },
+    "PLAN_SWITCH_NOOP": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "That plan version is already the active one, so there is nothing to switch.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Diese Tarifversion ist bereits aktiv.",
+        "en": "That plan version is already active."
+      }
+    },
+    "PLAN_SWITCH_PERIOD_SEALED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That date falls in a cycle that is already settled, and settled cycles stay so.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieses Datum liegt in einem bereits abgerechneten Zeitraum.",
+        "en": "That date falls in an already-settled period."
+      }
+    },
+    "PLAN_SWITCH_WHEN_INVALID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That is not a valid moment for a plan switch.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Das ist kein g\u00fcltiger Zeitpunkt f\u00fcr einen Tarifwechsel.",
+        "en": "That is not a valid moment for a plan switch."
+      }
+    },
+    "PLAN_USAGE_LEVERS_CONFLICT": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "Usage billing is off for this plan, so every usage lever must be zero \u2014 a non-zero one would read as configuration that does nothing.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Verbrauchsparameter m\u00fcssen null sein, solange die Verbrauchsabrechnung aus ist.",
+        "en": "Usage levers must be zero while usage billing is off."
+      }
+    },
+    "PLAN_VERSION_DATE_TAKEN": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This plan already has a version starting at that moment.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "F\u00fcr diesen Tarif existiert bereits eine Version mit diesem Startzeitpunkt.",
+        "en": "This plan already has a version starting then."
+      }
+    },
+    "PLAN_VERSION_GAP": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A plan must stay covered by a version at every moment, leaving no gap.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Ein Tarif muss mindestens eine Version behalten.",
+        "en": "A plan must keep at least one version."
+      }
+    },
+    "PLAN_VERSION_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No version of this plan answers that id.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Tarifversion gibt es nicht.",
+        "en": "That plan version does not exist."
+      }
+    },
+    "PLAN_VERSION_WINDOW_INVERTED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A plan version cannot end before it starts.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Eine Tarifversion kann nicht enden, bevor sie beginnt.",
+        "en": "A plan version cannot end before it starts."
+      }
+    },
+    "PRECONDITION_UNMET": {
+      "dev_message": "{endpoint} was called before {precondition} was satisfied, so it did nothing. The session is unaffected; satisfy it and call the action again.",
+      "level": "warning",
+      "meta": [
+        "endpoint",
+        "precondition"
+      ],
+      "type": "precondition",
+      "user_message": {
+        "de": "Daf\u00fcr liegt noch nichts vor.",
+        "en": "There is nothing to do that with yet."
+      }
+    },
+    "PRICING_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Pricing rows are never rewritten \u2014 usage already billed at this price depends on it. Add a row with a later validity window instead.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Preise k\u00f6nnen nach dem Anlegen nicht mehr ge\u00e4ndert werden.",
+        "en": "Pricing cannot be changed once created."
+      }
+    },
+    "PRICING_WINDOW_INVERTED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "A pricing window cannot end before it starts.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Ein Preiszeitraum kann nicht enden, bevor er beginnt.",
+        "en": "A pricing window cannot end before it starts."
+      }
+    },
+    "PROMPT_LANGUAGE_NOT_SUPPORTED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "This version supports {languages}, so a prompt cannot be written for another.",
+      "level": "error",
+      "meta": [
+        "languages"
+      ],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Version unterst\u00fctzt {languages}.",
+        "en": "This version supports {languages}."
+      }
+    },
+    "PROVIDER_ADAPTER_INACTIVE": {
+      "dev_message": "The adapter behind {config} is not active, so {provider} was skipped.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_ADAPTER_MISMATCH": {
+      "dev_message": "The adapter behind {config} does not belong to {provider}. This is a catalogue inconsistency rather than a switch someone turned off.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONFIG_DEPRECATED": {
+      "dev_message": "The adapter config {config} selected for {provider} is deprecated. The resolver redirects through a replacement before validating, so reaching this means the replacement chain is itself a dead end.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONFIG_INACTIVE": {
+      "dev_message": "The adapter config {config} selected for {provider} is not active.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONFIG_NOT_ALLOWED": {
+      "dev_message": "The adapter config {config} is linked to specific workflows, and this one is not among them, so it was not used for {provider}.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONFIG_PARAM_MISSING": {
+      "dev_message": "The connector behind {config} does not supply every parameter that model requires, so {provider} could not be filled.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONFIG_RETIRED": {
+      "dev_message": "The adapter config {config} selected for {provider} is deprecated and names no replacement, so there is nothing to fall through to.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONNECTOR_INACTIVE": {
+      "dev_message": "The connector behind {config} is not active, so {provider} was skipped.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_CONNECTOR_KEY_MISSING": {
+      "dev_message": "The connector behind {config} holds no API key, so nothing could authenticate at the vendor and {provider} was skipped.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_INACTIVE": {
+      "dev_message": "The {provider} capability is switched off platform-wide.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_MODEL_INACTIVE": {
+      "dev_message": "The catalogue model behind {config} is not active, so {provider} was skipped.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_MODEL_VENDOR_INACTIVE": {
+      "dev_message": "The model vendor behind {config} is not active, so {provider} was skipped. This is the vendor that built the model, not the one serving it.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_SERVICE_VENDOR_INACTIVE": {
+      "dev_message": "The service vendor behind {config} is not active, so {provider} was skipped. This is the vendor serving the API, not the one that built the model.",
+      "level": "warning",
+      "meta": [
+        "provider",
+        "config"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "PROVIDER_UNRESOLVED": {
+      "dev_message": "No adapter config could be selected for {provider}: nothing is configured for it on the form, the workspace, the plan or the platform defaults.",
+      "level": "warning",
+      "meta": [
+        "provider"
+      ],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "RANGE_INVALID": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "That range is not valid \u2014 the minimum is above the maximum.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Bereich ist nicht g\u00fcltig.",
+        "en": "That range is not valid."
+      }
+    },
+    "REASON_REQUIRED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "A reason is required: an adjustment without one is unexplained money.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Eine Begr\u00fcndung ist erforderlich.",
+        "en": "A reason is required."
+      }
+    },
+    "REGISTRATION_DISABLED": {
+      "audience": "console",
+      "close_code": 4403,
+      "dev_message": "Registration is switched off platform-wide.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Die Registrierung ist derzeit geschlossen.",
+        "en": "Registration is currently closed."
+      }
+    },
+    "REPLACEMENT_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No model answers the id given as the replacement.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieses Ersatzmodell gibt es nicht.",
+        "en": "That replacement model does not exist."
+      }
+    },
+    "REPLACEMENT_REQUIRED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "Deprecating this model requires naming the model that replaces it.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Ein Ersatzmodell ist erforderlich.",
+        "en": "A replacement model is required."
+      }
+    },
+    "REQUEST_TOO_LARGE": {
+      "audience": "public",
+      "close_code": 4413,
+      "dev_message": "The request body is larger than this route will read. Send less in one call, or stream it where the endpoint supports that.",
+      "level": "error",
+      "meta": [],
+      "status": 413,
+      "type": "too_large",
+      "user_message": {
+        "de": "Das ist zu gro\u00df zum Senden.",
+        "en": "That is too large to send."
+      }
+    },
+    "SCOPE_STOP_REQUESTED": {
+      "dev_message": "The {scope} scope was asked to stop, and its components are winding down.",
+      "level": "debug",
+      "meta": [
+        "scope"
+      ],
+      "type": "internal",
+      "user_message": {
+        "de": "Wird abgeschlossen.",
+        "en": "Finishing up."
+      }
+    },
+    "SECRET_KEY_INVALID": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "That secret key does not match the key it was presented with.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung konnte sich nicht anmelden. Bitte wenden Sie sich an die Person, die sie eingerichtet hat.",
+        "en": "This application could not sign in. Please contact whoever set it up."
+      }
+    },
+    "SECRET_KEY_REQUIRED": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "This request needs the secret half of the key pair, not only the key id. Send it from your server \u2014 a secret key must never reach a browser.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "SERVICE_UNAVAILABLE": {
+      "audience": "public",
+      "close_code": 4503,
+      "dev_message": "A dependency could not be reached. This is transient \u2014 a deploy, or a node moving the process \u2014 so the same request is worth retrying shortly.",
+      "level": "error",
+      "meta": [],
+      "status": 503,
+      "type": "unavailable",
+      "user_message": {
+        "de": "Speechineer ist kurz nicht erreichbar. Bitte versuchen Sie es in K\u00fcrze erneut.",
+        "en": "Speechineer is briefly unavailable. Please try again in a moment."
+      }
+    },
+    "SIGNING_KEY_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4401,
+      "dev_message": "No active signing key matches that token's key id. The key may have been archived, or the token was signed with a key from another workspace.",
+      "level": "error",
+      "meta": [],
+      "status": 401,
+      "type": "auth",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "SOURCE_VERSION_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "The version named as the source does not exist.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Ausgangsversion gibt es nicht.",
+        "en": "That source version does not exist."
+      }
+    },
+    "STOP_RECORDING_REQUESTED": {
+      "dev_message": "Recording should stop. The service emits this when a stop condition is reached; a client sends the same event to ask for it.",
+      "level": "info",
+      "meta": [],
+      "type": "lifecycle",
+      "user_message": {
+        "de": "Die Aufnahme wurde beendet.",
+        "en": "Recording has stopped."
+      }
+    },
+    "TARGET_NOT_PUBLISHED": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "The target version is not published.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Die Zielversion ist nicht ver\u00f6ffentlicht.",
+        "en": "The target version is not published."
+      }
+    },
+    "THROTTLED": {
+      "audience": "public",
+      "close_code": 4429,
+      "dev_message": "Too many requests in the counted window. Back off and retry.",
+      "level": "error",
+      "meta": [],
+      "status": 429,
+      "type": "rate_limit",
+      "user_message": {
+        "de": "Zu viele Versuche. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+        "en": "Too many attempts. Please wait a moment and try again."
+      }
+    },
+    "TRANSCRIPTION_DOWN": {
+      "dev_message": "Transcription lost its connection and is reconnecting \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Audio captured so far is kept.",
+      "level": "warning",
+      "meta": [
+        "retry_attempt",
+        "max_retries",
+        "retry_delay"
+      ],
+      "type": "recovery",
+      "user_message": {
+        "de": "Verbindung wird wiederhergestellt \u2014 bitte sprechen Sie in einem Moment weiter.",
+        "en": "Reconnecting \u2014 please keep speaking in a moment."
+      }
+    },
+    "TRANSCRIPTION_FAILED": {
+      "audience": "public",
+      "close_code": 4500,
+      "dev_message": "Transcription stopped and could not be restarted within its retry budget, so the session ended. Audio already transcribed is kept; start a new session to continue.",
+      "level": "error",
+      "meta": [],
+      "status": 500,
+      "type": "runtime",
+      "user_message": {
+        "de": "Die Aufnahme wurde unerwartet beendet. Bitte starten Sie erneut.",
+        "en": "The recording stopped unexpectedly. Please start again."
+      }
+    },
+    "TRANSCRIPTION_SEND_FAILED": {
+      "dev_message": "A chunk of audio could not be sent to transcription \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s.",
+      "level": "warning",
+      "meta": [
+        "retry_attempt",
+        "max_retries",
+        "retry_delay"
+      ],
+      "type": "recovery",
+      "user_message": {
+        "de": "Verbindung wird wiederhergestellt \u2014 bitte sprechen Sie in einem Moment weiter.",
+        "en": "Reconnecting \u2014 please keep speaking in a moment."
+      }
+    },
+    "UNIT_LEDGER_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Ledger entries are append-only \u2014 the ledger is the money record. Post an adjustment instead of editing an entry.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Buchungen k\u00f6nnen nach dem Schreiben nicht mehr ge\u00e4ndert werden.",
+        "en": "Ledger entries cannot be changed once written."
+      }
+    },
+    "UNIT_MAPPING_BACKDATED": {
+      "audience": "console",
+      "close_code": 4422,
+      "dev_message": "A unit mapping may only take effect now or later. Back-dating one would re-price usage that has already been billed.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Einheitenzuordnungen k\u00f6nnen nicht r\u00fcckdatiert werden.",
+        "en": "Unit mappings cannot be back-dated."
+      }
+    },
+    "UNIT_MAPPING_INCOMPLETE": {
+      "dev_message": "At least one meter this session can produce has no unit mapping in effect, so that usage will be refused rather than recorded at a price nobody configured.",
+      "level": "warning",
+      "meta": [],
+      "type": "config",
+      "user_message": {
+        "de": "Ein Teil des Verbrauchs dieser Sitzung wird m\u00f6glicherweise nicht erfasst.",
+        "en": "Some usage from this session may not be recorded."
+      }
+    },
+    "UNIT_MAPPING_MISSING": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "No unit mapping was in effect for that model and meter unit at the time of the session, so the usage cannot be priced and was refused rather than recorded as free.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Dieser Verbrauch konnte nicht bepreist werden.",
+        "en": "That usage could not be priced."
+      }
+    },
+    "UNSUPPORTED_MEDIA_TYPE": {
+      "audience": "public",
+      "close_code": 4415,
+      "dev_message": "This route does not read that content type. The body itself is fine \u2014 send it as one of the types the endpoint documents.",
+      "level": "error",
+      "meta": [],
+      "status": 415,
+      "type": "unsupported_media",
+      "user_message": {
+        "de": "Diese Art von Datei wird hier nicht unterst\u00fctzt.",
+        "en": "That kind of file is not supported here."
+      }
+    },
+    "UPSTREAM_INVALID": {
+      "audience": "public",
+      "close_code": 4502,
+      "dev_message": "A dependency answered with something unusable, so nothing could be relayed. Retrying the same request will produce the same answer \u2014 quote the request id when reporting it.",
+      "level": "error",
+      "meta": [],
+      "status": 502,
+      "type": "upstream",
+      "user_message": {
+        "de": "Auf unserer Seite ist ein Fehler aufgetreten. Bitte versuchen Sie es sp\u00e4ter erneut.",
+        "en": "Something went wrong on our side. Please try again later."
+      }
+    },
+    "USAGE_METERED": {
+      "dev_message": "Metered {quantity} {meter_unit} against {adapter_config_key}.",
+      "level": "debug",
+      "meta": [
+        "adapter_config_key",
+        "meter_unit",
+        "quantity"
+      ],
+      "type": "usage",
+      "user_message": {
+        "de": "Der Verbrauch wurde erfasst.",
+        "en": "Usage was recorded."
+      }
+    },
+    "USAGE_RECORD_IMMUTABLE": {
+      "audience": "console",
+      "close_code": 4409,
+      "dev_message": "Usage records are append-only \u2014 they are the evidence behind an invoice. Write a correcting entry instead of editing this one.",
+      "level": "error",
+      "meta": [],
+      "status": 409,
+      "type": "conflict",
+      "user_message": {
+        "de": "Verbrauchseintr\u00e4ge k\u00f6nnen nach dem Schreiben nicht mehr ge\u00e4ndert werden.",
+        "en": "Usage records cannot be changed once written."
+      }
+    },
+    "VALIDATION_ERROR": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "The request could not be processed as sent. See the causes listed with it.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Einige der \u00fcbermittelten Angaben wurden nicht akzeptiert.",
+        "en": "Some of the details sent were not accepted."
+      }
+    },
+    "WEBSOCKET_KIND_UNSUPPORTED": {
+      "dev_message": "This workflow has no {kind} connection, so the one that was opened was closed. The session is unaffected \u2014 stop opening it.",
+      "level": "warning",
+      "meta": [
+        "kind"
+      ],
+      "type": "unsupported",
+      "user_message": {
+        "de": "Ein Teil dieser Funktion ist nicht verf\u00fcgbar.",
+        "en": "Part of this feature is not available."
+      }
+    },
+    "WORKFLOW_FEATURE_UNKNOWN": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "The workflow exists but is bound to a feature this release does not implement. Nothing in the request can fix it \u2014 it is a configuration gap on our side.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Dieser Workflow ist nicht verf\u00fcgbar.",
+        "en": "That workflow is not available."
+      }
+    },
+    "WORKFLOW_KIND_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "No workflow of that kind exists. Check the name against the ones your plan enables.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diesen Workflow gibt es nicht.",
+        "en": "That workflow does not exist."
+      }
+    },
+    "WORKFLOW_NOT_FOUND": {
+      "audience": "public",
+      "close_code": 4404,
+      "dev_message": "No session answers that id. It was never created, or it has ended and been swept. Create a new session rather than retrying this one.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diese Sitzung ist nicht mehr verf\u00fcgbar.",
+        "en": "That session is no longer available."
+      }
+    },
+    "WORKFLOW_STANDALONE_MODE_UNSUPPORTED": {
+      "audience": "public",
+      "close_code": 4422,
+      "dev_message": "That workflow cannot run with a configuration declared in code. Configure it in the portal and resolve it by form key instead.",
+      "level": "error",
+      "meta": [],
+      "status": 422,
+      "type": "validation",
+      "user_message": {
+        "de": "Diese Anwendung ist nicht vollst\u00e4ndig eingerichtet.",
+        "en": "This application is not fully set up."
+      }
+    },
+    "WORKSPACE_INACTIVE": {
+      "audience": "public",
+      "close_code": 4403,
+      "dev_message": "That workspace is not active. A deactivated workspace can be switched back on in the portal; an archived one is final, and its sessions, keys and forms stay frozen with it.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Dieser Workspace ist nicht aktiv.",
+        "en": "This workspace is not active."
+      }
+    },
+    "WORKSPACE_NOT_FOUND": {
+      "audience": "console",
+      "close_code": 4404,
+      "dev_message": "No workspace answers that id for this organization.",
+      "level": "error",
+      "meta": [],
+      "status": 404,
+      "type": "not_found",
+      "user_message": {
+        "de": "Diesen Workspace gibt es nicht.",
+        "en": "That workspace does not exist."
+      }
+    },
+    "WORKSPACE_OWNER_REQUIRED": {
+      "audience": "console",
+      "close_code": 4403,
+      "dev_message": "Only a workspace owner can do this.",
+      "level": "error",
+      "meta": [],
+      "status": 403,
+      "type": "access",
+      "user_message": {
+        "de": "Das k\u00f6nnen nur Besitzerinnen und Besitzer des Workspace tun.",
+        "en": "Only a workspace owner can do this."
+      }
+    },
+    "WORKSPACE_QUOTA_EXCEEDED": {
+      "audience": "public",
+      "close_code": 4402,
+      "dev_message": "The workspace has used {used} of its {limit} units for this {layer}. Raise the workspace's limit, or wait for the period to roll over.",
+      "level": "error",
+      "meta": [
+        "limit",
+        "used",
+        "remaining",
+        "layer"
+      ],
+      "status": 402,
+      "type": "quota",
+      "user_message": {
+        "de": "Dieser Workspace hat alle {limit} Einheiten verbraucht.",
+        "en": "This workspace has used all {limit} of its units."
+      }
+    }
+  },
+  "languages": [
+    "en",
+    "de"
+  ],
+  "levels": {
+    "debug": 0,
+    "error": 3,
+    "info": 1,
+    "warning": 2
+  },
+  "types": {
+    "debug": {
+      "internal": {},
+      "progress": {},
+      "usage": {}
+    },
+    "error": {
+      "access": {
+        "close_code": 4403,
+        "status": 403
+      },
+      "auth": {
+        "close_code": 4401,
+        "status": 401
+      },
+      "client": {
+        "close_code": 4500,
+        "status": 500
+      },
+      "conflict": {
+        "close_code": 4409,
+        "status": 409
+      },
+      "method": {
+        "close_code": 4405,
+        "status": 405
+      },
+      "not_acceptable": {
+        "close_code": 4406,
+        "status": 406
+      },
+      "not_found": {
+        "close_code": 4404,
+        "status": 404
+      },
+      "quota": {
+        "close_code": 4402,
+        "status": 402
+      },
+      "rate_limit": {
+        "close_code": 4429,
+        "status": 429
+      },
+      "runtime": {
+        "close_code": 4500,
+        "status": 500
+      },
+      "service": {
+        "close_code": 4500,
+        "status": 500
+      },
+      "timeout": {
+        "close_code": 4504,
+        "status": 504
+      },
+      "too_large": {
+        "close_code": 4413,
+        "status": 413
+      },
+      "unavailable": {
+        "close_code": 4503,
+        "status": 503
+      },
+      "unsupported_media": {
+        "close_code": 4415,
+        "status": 415
+      },
+      "upstream": {
+        "close_code": 4502,
+        "status": 502
+      },
+      "validation": {
+        "close_code": 4422,
+        "status": 422
+      }
+    },
+    "info": {
+      "lifecycle": {}
+    },
+    "warning": {
+      "config": {},
+      "deprecation": {},
+      "precondition": {},
+      "recovery": {},
+      "unsupported": {}
+    }
+  }
+}

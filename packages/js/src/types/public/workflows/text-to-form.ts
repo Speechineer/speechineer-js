@@ -7,8 +7,10 @@
  * opens only the main connection; extraction is a request/reply action (`extract`).
  */
 
+import type { SdkLanguage } from '../../../errors/manifest.js';
 import type { FormDefinition } from '../../../features/forms/identity.js';
 import type { SessionState } from '../../../session/state.js';
+import type { Envelope } from '../../sdk/common/envelope.js';
 import type { TextToFormResolveResponseSdk } from '../../sdk/workflows/text-to-form.js';
 import type { Account } from '../common/auth.js';
 import type { FormValueCallbacks, SessionCallbacks } from '../common/callbacks.js';
@@ -32,6 +34,15 @@ export interface TextToFormOptions extends SessionCallbacks, FormValueCallbacks 
    * `account`. Ignored when the client authenticates with a signed token.
    */
   account?: Account;
+  /**
+   * The language to show this session's messages in, when it differs from the client's
+   * `uiLanguage`.
+   *
+   * It travels with the session, so every `userMessage` arrives already translated. Setting it
+   * again later **switches** the language from that point on; leaving it unset leaves the
+   * session in whatever language it was already running in.
+   */
+  uiLanguage?: SdkLanguage;
 }
 
 /**
@@ -91,9 +102,11 @@ export interface TextToFormSession {
  */
 export interface TextToFormWorkflowSessionParams extends SessionCallbacks, FormValueCallbacks {
   initialValues?: Record<string, unknown>;
-  createWorkflow: (resumeSessionId?: string) => Promise<TextToFormResolveResponseSdk>;
-  getWorkflow: (sessionId: string) => Promise<TextToFormResolveResponseSdk>;
-  deleteWorkflow: (answer: TextToFormResolveResponseSdk) => Promise<void>;
+  /** The session's own language, read at call time — see `WorkflowSessionCoreOptions.language`. */
+  language?: () => SdkLanguage;
+  createWorkflow: (resumeSessionId?: string) => Promise<Envelope<TextToFormResolveResponseSdk>>;
+  getWorkflow: (sessionId: string) => Promise<Envelope<TextToFormResolveResponseSdk>>;
+  deleteWorkflow: (answer: TextToFormResolveResponseSdk) => Promise<Envelope<null>>;
   /** Run the extract action against the live session. */
   extractText: (sessionId: string, text: string) => Promise<Readonly<Record<string, unknown>>>;
 }
