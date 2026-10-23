@@ -1,5 +1,13 @@
 # @speechineer/react
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [6def987]
+- Updated dependencies [6def987]
+  - @speechineer/js@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes
