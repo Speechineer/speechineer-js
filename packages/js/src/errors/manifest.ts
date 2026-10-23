@@ -9,11 +9,11 @@
  *   service's behalf). The service's own ~167 codes are declared once, in the protocol package,
  *   and arrive on the wire; `conformance.test.ts` keeps this list from growing a second copy of
  *   any of them.
- * - **Same field pattern as a service declaration**: a fixed `devMessage` and a `userMessage` per
- *   language, mirroring the protocol's `dev_message` + `user_message: {en, de}`.
+ * - **Same field pattern as a service declaration**: a fixed `message` and a `userMessage` per
+ *   language, mirroring the protocol's `message` + `user_message: {en, de}`.
  * - **The sentences are TEMPLATES and are never overridden per instance.** That is the
  *   protocol's rule and it is worth keeping: there, both messages are `ClassVar`s and
- *   `dev_text()` is `dev_message.format(**meta)`, so the wording lives in exactly one place and
+ *   `text()` is `message.format(**meta)`, so the wording lives in exactly one place and
  *   the *variable* parts are data. A per-call `message` override — which this file used to
  *   accept — moves the wording to the call site, where two raise sites drift apart and nothing
  *   can review them together. Runtime detail goes in `meta` and is interpolated.
@@ -71,7 +71,7 @@ export function negotiateSdkLanguage(): SdkLanguage {
 export const SDK_ERRORS = {
   NO_AUTH: {
     type: 'client',
-    devMessage: 'No credentials — pass `apiKey` or `token` to createClient(). {detail}',
+    message: 'No credentials — pass `apiKey` or `token` to createClient(). {detail}',
     userMessage: {
       en: 'This app is not set up correctly.',
       de: 'Diese Anwendung ist nicht korrekt eingerichtet.',
@@ -79,7 +79,7 @@ export const SDK_ERRORS = {
   },
   NO_ACCOUNT: {
     type: 'client',
-    devMessage:
+    message:
       'An `account` (the end user this session is for) is required with `apiKey` — on the client or on the session. {detail}',
     userMessage: {
       en: 'This app is not set up correctly.',
@@ -90,7 +90,7 @@ export const SDK_ERRORS = {
     type: 'client',
     // The `{detail}` tail is how each framework binding names its own remedy (a provider, a
     // provide call) without owning the sentence — the same split as `NO_AUTH` above.
-    devMessage: 'No Speechineer client is available. {detail}',
+    message: 'No Speechineer client is available. {detail}',
     userMessage: {
       en: 'This app is not set up correctly.',
       de: 'Diese Anwendung ist nicht korrekt eingerichtet.',
@@ -103,7 +103,7 @@ export const SDK_ERRORS = {
   // seeing it would actually mean.
   NO_SESSION: {
     type: 'client',
-    devMessage: 'An action needed a running session and the session reported none.',
+    message: 'An action needed a running session and the session reported none.',
     userMessage: {
       en: 'Nothing is being recorded right now.',
       de: 'Es wird gerade nichts aufgenommen.',
@@ -111,7 +111,7 @@ export const SDK_ERRORS = {
   },
   MICROPHONE_DENIED: {
     type: 'client',
-    devMessage:
+    message:
       'Microphone access was denied. Call start() from a user gesture and check the browser’s permission prompt.',
     userMessage: {
       en: 'Microphone access was denied. Allow it in the browser to continue.',
@@ -120,7 +120,7 @@ export const SDK_ERRORS = {
   },
   MICROPHONE_UNAVAILABLE: {
     type: 'client',
-    devMessage: 'No usable microphone was found.',
+    message: 'No usable microphone was found.',
     userMessage: {
       en: 'No microphone was found.',
       de: 'Es wurde kein Mikrofon gefunden.',
@@ -128,7 +128,7 @@ export const SDK_ERRORS = {
   },
   AUDIO_UNSUPPORTED: {
     type: 'client',
-    devMessage: 'This browser cannot record audio in the required format. {detail}',
+    message: 'This browser cannot record audio in the required format. {detail}',
     userMessage: {
       en: 'This browser cannot record audio.',
       de: 'Dieser Browser kann kein Audio aufnehmen.',
@@ -136,7 +136,7 @@ export const SDK_ERRORS = {
   },
   NETWORK: {
     type: 'client',
-    devMessage: 'Could not reach Speechineer. {detail}',
+    message: 'Could not reach Speechineer. {detail}',
     userMessage: {
       en: 'Speechineer could not be reached.',
       de: 'Speechineer konnte nicht erreicht werden.',
@@ -152,7 +152,7 @@ export const SDK_ERRORS = {
    */
   UNKNOWN: {
     type: 'client',
-    devMessage: 'Something went wrong. {detail}',
+    message: 'Something went wrong. {detail}',
     userMessage: {
       en: 'Something went wrong.',
       de: 'Etwas ist schiefgelaufen.',
@@ -164,7 +164,7 @@ export const SDK_ERRORS = {
   // cause stays diagnosable without the wording moving to the call site.
   REQUEST_FAILED: {
     type: 'service',
-    devMessage: 'The request was rejected ({status}). {body}',
+    message: 'The request was rejected ({status}). {body}',
     userMessage: {
       en: 'Something went wrong.',
       de: 'Etwas ist schiefgelaufen.',
@@ -253,7 +253,7 @@ export function sdkEvent(
   return {
     code,
     type: declared.type,
-    dev_message: renderTemplate(declared.devMessage, meta),
+    message: renderTemplate(declared.message, meta),
     user_message: sdkUserMessage(code, options.language, meta),
     meta,
   };

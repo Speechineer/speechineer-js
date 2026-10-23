@@ -11,9 +11,9 @@
  *   so `instanceof` keeps working when two copies of this package end up in one bundle — a
  *   transitive dependency pinning a different version. AWS's v3 SDK solves this the same way.
  * - **Two sentences, two readers.** The service renders `user_message` into the session's
- *   language for the person on the screen, and `dev_message` in English for whoever is
- *   integrating. `Error.message` mirrors `dev_message`, because that is who reads a stack trace.
- *   The operator's log line — the text the service's own `raise` carried — never travels.
+ *   language for the person on the screen, and `message` in English for whoever is integrating —
+ *   which is `Error.message`, the sentence a stack trace and every logger already read. The
+ *   operator's log line — the text the service's own `raise` carried — never travels.
  * - **`field`, `details` and `requestId` are gone.** An aggregated failure is now the envelope's
  *   cause-ordered `errors[]`, so a per-error breakdown had two homes, and a top-level `field`
  *   could only ever describe one of them; what a failure is *about* rides its typed `meta`.
@@ -29,8 +29,8 @@ export interface SpeechineerErrorOptions {
   type: string;
   code: string;
   /** For the integrator. Becomes `Error.message`. */
-  devMessage: string;
-  /** For the person on the screen. Falls back to `devMessage` when the service sent none. */
+  message: string;
+  /** For the person on the screen. Falls back to `message` when the service sent none. */
   userMessage?: string | null;
   meta?: Record<string, unknown> | null;
   cause?: unknown;
@@ -43,9 +43,8 @@ export interface SpeechineerErrorOptions {
  * (`SpeechineerQuotaError` covers every way an allowance can run out).
  *
  * **Two messages, for two readers.** `userMessage` is written for the person using your app and
- * arrives already translated into the session's language — show that one. `message` (and
- * `devMessage`, the same text) is written for you: it says what to do about the failure, and
- * belongs in your logs rather than on screen.
+ * arrives already translated into the session's language — show that one. `message` is written
+ * for you: it says what to do about the failure, and belongs in your logs rather than on screen.
  *
  * It is also a {@link SpeechineerEvent} with `level: 'error'`, which is why `onEvent` can
  * receive failures and notices alike.
@@ -69,8 +68,6 @@ export class SpeechineerError extends Error implements SpeechineerEvent {
   readonly code: string;
   /** For the person using your app, in the session's language. Show this one. */
   readonly userMessage: string;
-  /** For you: what went wrong and what to do about it. Same text as `message`. */
-  readonly devMessage: string;
   /** Data belonging to this failure — the shape depends on `code`. */
   readonly meta: Record<string, unknown> | null;
   /** @internal brand for cross-bundle `instanceof` */
@@ -85,7 +82,7 @@ export class SpeechineerError extends Error implements SpeechineerEvent {
 
   /** The class name — `"SpeechineerQuotaError"` and so on. Prefer `code` or a `catch` by class. */
   declare readonly name: string;
-  /** The developer sentence, in English — the same text as `devMessage`. */
+  /** For you, in English: what went wrong and what to do about it. Log this one. */
   declare readonly message: string;
   /** Where the failure was raised, when the browser provides it. */
   declare readonly stack?: string;
@@ -93,15 +90,24 @@ export class SpeechineerError extends Error implements SpeechineerEvent {
   constructor(options: SpeechineerErrorOptions) {
     // Assigned rather than passed to `super`: the ES2022 `Error(message, { cause })` overload
     // is not in this package's lib target, and the property is what consumers read anyway.
-    super(options.devMessage);
+    super(options.message);
+    // `Error` defines `message` as non-enumerable, and `devMessage` used to be an enumerable field —
+    // so `JSON.stringify(error)` or `{ ...error }` carried the developer sentence, and a structured
+    // logger still has to. Re-declared enumerable, which also makes an error serialise the way a
+    // notice does (a plain object whose `message` is data).
+    Object.defineProperty(this, 'message', {
+      value: options.message,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
     if (options.cause !== undefined) this.cause = options.cause;
     this.name = new.target.name;
     this.type = options.type;
     this.code = options.code;
-    this.devMessage = options.devMessage;
     // Never null: a caller showing `userMessage` in their UI should not have to branch on
     // whether the service had a translation for this particular code.
-    this.userMessage = options.userMessage || options.devMessage;
+    this.userMessage = options.userMessage || options.message;
     this.meta = options.meta ?? null;
   }
 

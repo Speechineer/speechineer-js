@@ -3,8 +3,8 @@
     "ACCOUNT_INACTIVE": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "That account is not active. Reactivate it in the portal, or name a different account in the auth token.",
       "level": "error",
+      "message": "That account is not active. Reactivate it in the portal, or name a different account in the auth token.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -16,8 +16,8 @@
     "ACCOUNT_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No account answers that key in this workspace.",
       "level": "error",
+      "message": "No account answers that key in this workspace.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -29,8 +29,8 @@
     "ACCOUNT_QUOTA_EXCEEDED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "This account has used {used} of its {limit} units for this {layer}. The ceiling is per account, so other accounts in the workspace are unaffected.",
       "level": "error",
+      "message": "This account has used {used} of its {limit} units for this {layer}. The ceiling is per account, so other accounts in the workspace are unaffected.",
       "meta": [
         "limit",
         "used",
@@ -47,8 +47,8 @@
     "ACCOUNT_REQUIRED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That auth token names no account. Usage and quotas are counted per account, so one has to be named even when your application has a single user.",
       "level": "error",
+      "message": "That auth token names no account. Usage and quotas are counted per account, so one has to be named even when your application has a single user.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -60,8 +60,8 @@
     "ACCOUNT_STATUS_EVENT_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Account status events record what was true when, so they are append-only.",
       "level": "error",
+      "message": "Account status events record what was true when, so they are append-only.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -73,8 +73,8 @@
     "ACTION_PRECONDITION_UNMET": {
       "audience": "public",
       "close_code": 4409,
-      "dev_message": "{endpoint} needs {precondition} first, so it did nothing. The session is unaffected \u2014 wait for that step and call it again.",
       "level": "error",
+      "message": "{endpoint} needs {precondition} first, so it did nothing. The session is unaffected \u2014 wait for that step and call it again.",
       "meta": [
         "endpoint",
         "precondition"
@@ -89,8 +89,8 @@
     "ACTION_TIMEOUT": {
       "audience": "public",
       "close_code": 4504,
-      "dev_message": "That action did not finish within the time this workflow allows. The session is still alive \u2014 retry the action.",
       "level": "error",
+      "message": "That action did not finish within the time this workflow allows. The session is still alive \u2014 retry the action.",
       "meta": [],
       "status": 504,
       "type": "timeout",
@@ -102,8 +102,8 @@
     "ADAPTER_CONFIG_NOT_ALLOWED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "That adapter configuration cannot be used for this provider slot.",
       "level": "error",
+      "message": "That adapter configuration cannot be used for this provider slot.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -115,8 +115,8 @@
     "ADAPTER_CONFIG_NOT_ENTITLED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "That adapter configuration is not included in this plan. Choose one the plan includes, or leave it unset to take the default.",
       "level": "error",
+      "message": "That adapter configuration is not included in this plan. Choose one the plan includes, or leave it unset to take the default.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -128,8 +128,8 @@
     "ADAPTER_CONFIG_NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "No adapter configuration answers that key.",
       "level": "error",
+      "message": "No adapter configuration answers that key.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -141,8 +141,8 @@
     "ALREADY_PUBLISHED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "That version is already published.",
       "level": "error",
+      "message": "That version is already published.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -154,8 +154,8 @@
     "API_KEY_INVALID": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That API key cannot be used. It is unknown, no longer active, or past its expiry \u2014 deliberately one answer for all three, so this response cannot be used to probe which keys exist. Check the key in the portal.",
       "level": "error",
+      "message": "That API key cannot be used. It is unknown, no longer active, or past its expiry \u2014 deliberately one answer for all three, so this response cannot be used to probe which keys exist. Check the key in the portal.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -167,8 +167,8 @@
     "API_KEY_QUOTA_EXCEEDED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "The key used for this request has spent {used} of its {limit} units for this {layer}. The ceiling belongs to the key, so another key in the same workspace may still have budget.",
       "level": "error",
+      "message": "The key used for this request has spent {used} of its {limit} units for this {layer}. The ceiling belongs to the key, so another key in the same workspace may still have budget.",
       "meta": [
         "limit",
         "used",
@@ -185,8 +185,8 @@
     "API_KEY_UNSIGNED_UNDER_SIGNED_POLICY": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "This workspace requires signed tokens, so an unsigned key would be unable to authenticate at all. Create a signed key, or lift the requirement first.",
       "level": "error",
+      "message": "This workspace requires signed tokens, so an unsigned key would be unable to authenticate at all. Create a signed key, or lift the requirement first.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -198,8 +198,8 @@
     "AUDIO_CHUNK_INVALID": {
       "audience": "public",
       "close_code": 4500,
-      "dev_message": "An audio chunk was not a size transcription can accept. Check the frame duration and the sample rate the session was created with.",
       "level": "error",
+      "message": "An audio chunk was not a size transcription can accept. Check the frame duration and the sample rate the session was created with.",
       "meta": [],
       "status": 500,
       "type": "runtime",
@@ -211,8 +211,8 @@
     "AUDIT_LOG_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Audit entries are append-only. A log that can be edited is not a log.",
       "level": "error",
+      "message": "Audit entries are append-only. A log that can be edited is not a log.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -224,8 +224,8 @@
     "AUTH_ENVELOPE_INVALID": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That auth token could not be verified. Check the signature, the audience and the expiry \u2014 and that the clock on the machine minting it is right.",
       "level": "error",
+      "message": "That auth token could not be verified. Check the signature, the audience and the expiry \u2014 and that the clock on the machine minting it is right.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -237,8 +237,8 @@
     "AUTH_ENVELOPE_LIFETIME_EXCEEDED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That auth token's lifetime is longer than this workspace allows. Mint short-lived tokens per session instead of long-lived ones.",
       "level": "error",
+      "message": "That auth token's lifetime is longer than this workspace allows. Mint short-lived tokens per session instead of long-lived ones.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -250,8 +250,8 @@
     "AUTH_ENVELOPE_REPLAYED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That auth token has already been used. Each token carries a one-time id, so mint a fresh one per session rather than reusing one.",
       "level": "error",
+      "message": "That auth token has already been used. Each token carries a one-time id, so mint a fresh one per session rather than reusing one.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -263,8 +263,8 @@
     "AUTH_MODE_MISMATCH": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That token does not match the key's auth mode. A signed key may present only a signed token and an unsigned key only an unsigned one \u2014 the mode selects, it does not widen.",
       "level": "error",
+      "message": "That token does not match the key's auth mode. A signed key may present only a signed token and an unsigned key only an unsigned one \u2014 the mode selects, it does not widen.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -276,8 +276,8 @@
     "AUTH_REQUIRED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "This request carried no auth block at all. Every session call needs one, even where the workspace accepts unsigned tokens.",
       "level": "error",
+      "message": "This request carried no auth block at all. Every session call needs one, even where the workspace accepts unsigned tokens.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -289,8 +289,8 @@
     "AUTH_SIGNATURE_REQUIRED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "This workspace accepts only signed auth tokens. Sign the token with one of the workspace's active signing keys, or turn the requirement off in the portal.",
       "level": "error",
+      "message": "This workspace accepts only signed auth tokens. Sign the token with one of the workspace's active signing keys, or turn the requirement off in the portal.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -302,8 +302,8 @@
     "BAD_REQUEST": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "The request was refused before it reached a route \u2014 a disallowed host, or a shape the server rejects outright.",
       "level": "error",
+      "message": "The request was refused before it reached a route \u2014 a disallowed host, or a shape the server rejects outright.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -315,8 +315,8 @@
     "BILLING_ADDRESS_MISSING": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "A billing address is required before this can proceed.",
       "level": "error",
+      "message": "A billing address is required before this can proceed.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -328,8 +328,8 @@
     "BILLING_ADDRESS_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No billing address is on file for this organization.",
       "level": "error",
+      "message": "No billing address is on file for this organization.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -341,8 +341,8 @@
     "BILLING_RUN_COMPUTED_INVALID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This billing run produced figures that failed their own consistency check, so nothing was written. The inputs need looking at before it can run again.",
       "level": "error",
+      "message": "This billing run produced figures that failed their own consistency check, so nothing was written. The inputs need looking at before it can run again.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -354,8 +354,8 @@
     "BLOG_AUTHOR_IN_USE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Posts still carry this byline, so deleting the author would leave them unattributed. Deactivate it instead.",
       "level": "error",
+      "message": "Posts still carry this byline, so deleting the author would leave them unattributed. Deactivate it instead.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -367,8 +367,8 @@
     "BLOG_AUTHOR_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No author answers that id.",
       "level": "error",
+      "message": "No author answers that id.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -380,8 +380,8 @@
     "BLOG_CONTENT_INVALID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "The post content is not a valid document.",
       "level": "error",
+      "message": "The post content is not a valid document.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -393,8 +393,8 @@
     "BLOG_CONTENT_TOO_LARGE": {
       "audience": "console",
       "close_code": 4413,
-      "dev_message": "The post content is a valid document, and larger than this route will store.",
       "level": "error",
+      "message": "The post content is a valid document, and larger than this route will store.",
       "meta": [],
       "status": 413,
       "type": "too_large",
@@ -406,8 +406,8 @@
     "BLOG_EN_REQUIRED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "English is the canonical translation: a post cannot be published without it, and a published post cannot lose it.",
       "level": "error",
+      "message": "English is the canonical translation: a post cannot be published without it, and a published post cannot lose it.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -419,8 +419,8 @@
     "BLOG_IMAGE_TOO_LARGE": {
       "audience": "console",
       "close_code": 4413,
-      "dev_message": "That image is a supported type, and larger than this route will store.",
       "level": "error",
+      "message": "That image is a supported type, and larger than this route will store.",
       "meta": [],
       "status": 413,
       "type": "too_large",
@@ -432,8 +432,8 @@
     "BLOG_IMAGE_UNSUPPORTED": {
       "audience": "console",
       "close_code": 4415,
-      "dev_message": "That file is not an image type the blog stores.",
       "level": "error",
+      "message": "That file is not an image type the blog stores.",
       "meta": [],
       "status": 415,
       "type": "unsupported_media",
@@ -445,8 +445,8 @@
     "BLOG_LANGUAGE_UNSUPPORTED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That language is not one the blog publishes in.",
       "level": "error",
+      "message": "That language is not one the blog publishes in.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -458,8 +458,8 @@
     "BLOG_POST_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No post answers that slug or id.",
       "level": "error",
+      "message": "No post answers that slug or id.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -471,8 +471,8 @@
     "BLOG_SLUG_TAKEN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That slug already belongs to another post.",
       "level": "error",
+      "message": "That slug already belongs to another post.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -484,8 +484,8 @@
     "BLOG_TRANSLATION_MISSING": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "This post has no translation in that language.",
       "level": "error",
+      "message": "This post has no translation in that language.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -495,8 +495,8 @@
       }
     },
     "CLIENT_DISCONNECTED": {
-      "dev_message": "The client's connection closed. Nothing is sent for this \u2014 the only peer who could receive it is the one that left \u2014 but the session reacts to it and the log records it.",
       "level": "info",
+      "message": "The client's connection closed. Nothing is sent for this \u2014 the only peer who could receive it is the one that left \u2014 but the session reacts to it and the log records it.",
       "meta": [],
       "type": "lifecycle",
       "user_message": {
@@ -505,8 +505,8 @@
       }
     },
     "CLIENT_FRAME_UNREADABLE": {
-      "dev_message": "A frame on the session connection was ignored ({reason}): {code}. The session is unaffected, but whatever that frame asked for did not happen. This service accepts: {accepted}.",
       "level": "warning",
+      "message": "A frame on the session connection was ignored ({reason}): {code}. The session is unaffected, but whatever that frame asked for did not happen. This service accepts: {accepted}.",
       "meta": [
         "reason",
         "code",
@@ -521,8 +521,8 @@
     "CLIENT_INACTIVE": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "The organization this credential belongs to is suspended or deleted, so every request from it is refused regardless of which key made it.",
       "level": "error",
+      "message": "The organization this credential belongs to is suspended or deleted, so every request from it is refused regardless of which key made it.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -534,8 +534,8 @@
     "CLIENT_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No organization answers that id.",
       "level": "error",
+      "message": "No organization answers that id.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -547,8 +547,8 @@
     "CODE_DEFINED_CONFIG_NOT_APPLICABLE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That configuration does not apply to a form whose fields are declared in code.",
       "level": "error",
+      "message": "That configuration does not apply to a form whose fields are declared in code.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -558,8 +558,8 @@
       }
     },
     "CODE_VALUE_OVERRIDDEN": {
-      "dev_message": "The form's definition in the portal overrode the configuration supplied in code for {field}. The portal's definition is authoritative \u2014 remove it from your code, or change it in the portal.",
       "level": "warning",
+      "message": "The form's definition in the portal overrode the configuration supplied in code for {field}. The portal's definition is authoritative \u2014 remove it from your code, or change it in the portal.",
       "meta": [
         "field"
       ],
@@ -572,8 +572,8 @@
     "COMPONENT_ARCHIVED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Archiving is final. An archived component stays readable so the record keeps making sense, but nothing about it can be changed and it cannot be brought back.",
       "level": "error",
+      "message": "Archiving is final. An archived component stays readable so the record keeps making sense, but nothing about it can be changed and it cannot be brought back.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -585,8 +585,8 @@
     "COMPONENT_IN_USE": {
       "audience": "public",
       "close_code": 4409,
-      "dev_message": "This has been used, and usage or billing records still reference it, so it can no longer be deleted. Deactivate or archive it instead \u2014 the records keep reading.",
       "level": "error",
+      "message": "This has been used, and usage or billing records still reference it, so it can no longer be deleted. Deactivate or archive it instead \u2014 the records keep reading.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -598,8 +598,8 @@
     "CONCURRENCY_LIMIT_REACHED": {
       "audience": "public",
       "close_code": 4429,
-      "dev_message": "This key already has as many sessions running as it may. Nothing is used up \u2014 end one, or wait for one to finish, and retry.",
       "level": "error",
+      "message": "This key already has as many sessions running as it may. Nothing is used up \u2014 end one, or wait for one to finish, and retry.",
       "meta": [],
       "status": 429,
       "type": "rate_limit",
@@ -611,8 +611,8 @@
     "CONFIG_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "The configuration resolved for this session did not validate, so nothing was started. Check the form's configuration in the portal.",
       "level": "error",
+      "message": "The configuration resolved for this session did not validate, so nothing was started. Check the form's configuration in the portal.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -624,8 +624,8 @@
     "CONNECTOR_PARAM_MISSING": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "The selected connector does not provide every parameter this model requires.",
       "level": "error",
+      "message": "The selected connector does not provide every parameter this model requires.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -637,8 +637,8 @@
     "CSRF_FAILED": {
       "audience": "console",
       "close_code": 4403,
-      "dev_message": "CSRF verification failed. Fetch a fresh token and retry \u2014 this is a stale page, not a permission problem.",
       "level": "error",
+      "message": "CSRF verification failed. Fetch a fresh token and retry \u2014 this is a stale page, not a permission problem.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -650,8 +650,8 @@
     "DEMO_PAUSED": {
       "audience": "console",
       "close_code": 4503,
-      "dev_message": "The public demo is switched off, or the workspace behind it is no longer there.",
       "level": "error",
+      "message": "The public demo is switched off, or the workspace behind it is no longer there.",
       "meta": [],
       "status": 503,
       "type": "unavailable",
@@ -663,8 +663,8 @@
     "DEPRECATION_BLOCKED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This model is still referenced, so it cannot be deprecated yet.",
       "level": "error",
+      "message": "This model is still referenced, so it cannot be deprecated yet.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -676,8 +676,8 @@
     "DUPLICATE_FIELD_ID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "Two fields cannot share an id.",
       "level": "error",
+      "message": "Two fields cannot share an id.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -689,8 +689,8 @@
     "EMAIL_ALREADY_USED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "That email address already belongs to a login.",
       "level": "error",
+      "message": "That email address already belongs to a login.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -702,8 +702,8 @@
     "EMISSION_ID_REQUIRED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "An emission id is required: it is what makes a retried usage post idempotent instead of double-charging.",
       "level": "error",
+      "message": "An emission id is required: it is what makes a retried usage post idempotent instead of double-charging.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -715,8 +715,8 @@
     "ENDPOINT_NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "No endpoint answers that path. Check the method and the path against the docs.",
       "level": "error",
+      "message": "No endpoint answers that path. Check the method and the path against the docs.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -726,8 +726,8 @@
       }
     },
     "EXTRACTION_DOWN": {
-      "dev_message": "Field extraction failed an attempt and is retrying \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Values already recognized are kept.",
       "level": "warning",
+      "message": "Field extraction failed an attempt and is retrying \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Values already recognized are kept.",
       "meta": [
         "retry_attempt",
         "max_retries",
@@ -742,8 +742,8 @@
     "EXTRACTION_FAILED": {
       "audience": "public",
       "close_code": 4500,
-      "dev_message": "Field extraction stopped and could not be restarted within its retry budget, so the session ended. Values already recognized are kept.",
       "level": "error",
+      "message": "Field extraction stopped and could not be restarted within its retry budget, so the session ended. Values already recognized are kept.",
       "meta": [],
       "status": 500,
       "type": "runtime",
@@ -755,8 +755,8 @@
     "FEATURE_CONFIG_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "The feature configuration is incomplete or does not validate.",
       "level": "error",
+      "message": "The feature configuration is incomplete or does not validate.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -768,8 +768,8 @@
     "FEATURE_FIELD_CONFIG_REQUIRED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "This feature needs a field configuration \u2014 either a form key to resolve, or the fields declared in code.",
       "level": "error",
+      "message": "This feature needs a field configuration \u2014 either a form key to resolve, or the fields declared in code.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -781,8 +781,8 @@
     "FEATURE_NOT_AVAILABLE": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "This feature is not included in the plan this organization is on. Nothing in the request can enable it \u2014 the plan has to change.",
       "level": "error",
+      "message": "This feature is not included in the plan this organization is on. Nothing in the request can enable it \u2014 the plan has to change.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -794,8 +794,8 @@
     "FEATURE_SETTING_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} is not a valid value for this setting.",
       "level": "error",
+      "message": "{field} is not a valid value for this setting.",
       "meta": [
         "field"
       ],
@@ -809,8 +809,8 @@
     "FEATURE_SETTING_NOT_ALLOWED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} is not a setting this feature defines.",
       "level": "error",
+      "message": "{field} is not a setting this feature defines.",
       "meta": [
         "field"
       ],
@@ -824,8 +824,8 @@
     "FEEDBACK_DELIVERY_FAILED": {
       "audience": "console",
       "close_code": 4503,
-      "dev_message": "The mail provider refused or suppressed the message, so nothing was delivered.",
       "level": "error",
+      "message": "The mail provider refused or suppressed the message, so nothing was delivered.",
       "meta": [],
       "status": 503,
       "type": "unavailable",
@@ -837,8 +837,8 @@
     "FEEDBACK_VOICE_PAUSED": {
       "audience": "console",
       "close_code": 4503,
-      "dev_message": "The workspace behind voice feedback is not active, so dictation cannot start.",
       "level": "error",
+      "message": "The workspace behind voice feedback is not active, so dictation cannot start.",
       "meta": [],
       "status": 503,
       "type": "unavailable",
@@ -850,8 +850,8 @@
     "FIELD_ENUM_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be one of: {options}.",
       "level": "error",
+      "message": "{field} must be one of: {options}.",
       "meta": [
         "field",
         "options"
@@ -866,8 +866,8 @@
     "FIELD_ID_INVALID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That field id is not valid.",
       "level": "error",
+      "message": "That field id is not valid.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -879,8 +879,8 @@
     "FIELD_NOT_IN_VERSION": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That field is not part of this version.",
       "level": "error",
+      "message": "That field is not part of this version.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -892,8 +892,8 @@
     "FIELD_PATTERN_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must match {pattern}.",
       "level": "error",
+      "message": "{field} must match {pattern}.",
       "meta": [
         "field",
         "pattern"
@@ -908,8 +908,8 @@
     "FIELD_REQUIRED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} is required.",
       "level": "error",
+      "message": "{field} is required.",
       "meta": [
         "field"
       ],
@@ -923,8 +923,8 @@
     "FIELD_TOO_LARGE": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be at most {limit}.",
       "level": "error",
+      "message": "{field} must be at most {limit}.",
       "meta": [
         "field",
         "limit"
@@ -939,8 +939,8 @@
     "FIELD_TOO_LONG": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be at most {limit} characters.",
       "level": "error",
+      "message": "{field} must be at most {limit} characters.",
       "meta": [
         "field",
         "limit"
@@ -955,8 +955,8 @@
     "FIELD_TOO_SHORT": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be at least {limit} characters.",
       "level": "error",
+      "message": "{field} must be at least {limit} characters.",
       "meta": [
         "field",
         "limit"
@@ -971,8 +971,8 @@
     "FIELD_TOO_SMALL": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be at least {limit}.",
       "level": "error",
+      "message": "{field} must be at least {limit}.",
       "meta": [
         "field",
         "limit"
@@ -987,8 +987,8 @@
     "FIELD_TYPE_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} must be {expected}.",
       "level": "error",
+      "message": "{field} must be {expected}.",
       "meta": [
         "field",
         "expected"
@@ -1001,8 +1001,8 @@
       }
     },
     "FORCE_STOP_REQUESTED": {
-      "dev_message": "The {scope} scope was force-stopped: nothing waits for components to finish. This is the teardown path a terminal failure takes.",
       "level": "debug",
+      "message": "The {scope} scope was force-stopped: nothing waits for components to finish. This is the teardown path a terminal failure takes.",
       "meta": [
         "scope"
       ],
@@ -1015,8 +1015,8 @@
     "FORM_FIELD_INVALID": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "{field} is not a usable field declaration.",
       "level": "error",
+      "message": "{field} is not a usable field declaration.",
       "meta": [
         "field"
       ],
@@ -1030,8 +1030,8 @@
     "FORM_KEY_PORTAL_OWNED": {
       "audience": "public",
       "close_code": 4409,
-      "dev_message": "That form key already belongs to a form defined in the portal, which a code-defined form may not overwrite. Choose another key \u2014 re-sending this one will not help.",
       "level": "error",
+      "message": "That form key already belongs to a form defined in the portal, which a code-defined form may not overwrite. Choose another key \u2014 re-sending this one will not help.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1043,8 +1043,8 @@
     "FORM_NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "No form answers that key in this workspace. A form key is scoped to one workspace, so a key that works elsewhere will not resolve here.",
       "level": "error",
+      "message": "No form answers that key in this workspace. A form key is scoped to one workspace, so a key that works elsewhere will not resolve here.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1056,8 +1056,8 @@
     "FORM_QUOTA_EXCEEDED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "This form has used {used} of its {limit} units for this {layer}. The ceiling belongs to the form, so other forms in the workspace may still have budget.",
       "level": "error",
+      "message": "This form has used {used} of its {limit} units for this {layer}. The ceiling belongs to the form, so other forms in the workspace may still have budget.",
       "meta": [
         "limit",
         "used",
@@ -1074,8 +1074,8 @@
     "FORM_VERSION_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A published version is frozen: sessions have already run against it. Create a new draft from it instead.",
       "level": "error",
+      "message": "A published version is frozen: sessions have already run against it. Create a new draft from it instead.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1087,8 +1087,8 @@
     "FORM_VERSION_LANGUAGE_UNAVAILABLE": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "That form version does not declare support for the language asked for.",
       "level": "error",
+      "message": "That form version does not declare support for the language asked for.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1100,8 +1100,8 @@
     "FORM_VERSION_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No version of this form answers that key.",
       "level": "error",
+      "message": "No version of this form answers that key.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1113,8 +1113,8 @@
     "FORM_VERSION_NOT_PUBLISHED": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "That version exists but is not published, so no session may run it. Publish it, or omit the version to get the one that is live.",
       "level": "error",
+      "message": "That version exists but is not published, so no session may run it. Publish it, or omit the version to get the one that is live.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1126,8 +1126,8 @@
     "INTERNAL_ERROR": {
       "audience": "root",
       "close_code": 4500,
-      "dev_message": "The request could not be completed. This is a fault on Speechineer's side, not in the request \u2014 quote the request id when reporting it.",
       "level": "error",
+      "message": "The request could not be completed. This is a fault on Speechineer's side, not in the request \u2014 quote the request id when reporting it.",
       "meta": [],
       "status": 500,
       "type": "service",
@@ -1139,8 +1139,8 @@
     "INTERNAL_IDENTITY_PROTECTED": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "That account is reserved and cannot be asserted with this key. Name one of your own accounts instead.",
       "level": "error",
+      "message": "That account is reserved and cannot be asserted with this key. Name one of your own accounts instead.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -1152,8 +1152,8 @@
     "INVALID_CREDENTIALS": {
       "audience": "console",
       "close_code": 4401,
-      "dev_message": "Those credentials were refused \u2014 deliberately one answer for a wrong password, an unknown address and an account that signs in through a provider instead.",
       "level": "error",
+      "message": "Those credentials were refused \u2014 deliberately one answer for a wrong password, an unknown address and an account that signs in through a provider instead.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -1165,8 +1165,8 @@
     "INVALID_IMPORT": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That import file could not be read.",
       "level": "error",
+      "message": "That import file could not be read.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1178,8 +1178,8 @@
     "INVALID_REFRESH_TOKEN": {
       "audience": "console",
       "close_code": 4401,
-      "dev_message": "That session can no longer be refreshed. It has expired, been rotated, or been revoked by a password change.",
       "level": "error",
+      "message": "That session can no longer be refreshed. It has expired, been rotated, or been revoked by a password change.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -1191,8 +1191,8 @@
     "INVALID_TOKEN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That one-time link is unknown or has expired. Each link may be used once; request a fresh one.",
       "level": "error",
+      "message": "That one-time link is unknown or has expired. Each link may be used once; request a fresh one.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1204,8 +1204,8 @@
     "INVOICE_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No invoice answers that id for this organization.",
       "level": "error",
+      "message": "No invoice answers that id for this organization.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1217,8 +1217,8 @@
     "LAST_OWNER": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "An organization must keep at least one owner. Make someone else an owner first, then remove this one.",
       "level": "error",
+      "message": "An organization must keep at least one owner. Make someone else an owner first, then remove this one.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1230,8 +1230,8 @@
     "LAST_VERSION": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A form must keep at least one version. Archive the form instead.",
       "level": "error",
+      "message": "A form must keep at least one version. Archive the form instead.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1241,8 +1241,8 @@
       }
     },
     "LAYER_TRIGGERED": {
-      "dev_message": "Layer {layer_index} of the workflow graph started.",
       "level": "debug",
+      "message": "Layer {layer_index} of the workflow graph started.",
       "meta": [
         "layer_index"
       ],
@@ -1255,8 +1255,8 @@
     "LIFECYCLE_INVARIANT_BROKEN": {
       "audience": "public",
       "close_code": 4500,
-      "dev_message": "The session hit a broken internal invariant and stopped. Nothing in the request caused it and nothing about the request will avoid it \u2014 quote the request id.",
       "level": "error",
+      "message": "The session hit a broken internal invariant and stopped. Nothing in the request caused it and nothing about the request will avoid it \u2014 quote the request id.",
       "meta": [],
       "status": 500,
       "type": "service",
@@ -1268,8 +1268,8 @@
     "MAIL_TEMPLATE_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No mail template answers that name.",
       "level": "error",
+      "message": "No mail template answers that name.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1281,8 +1281,8 @@
     "METHOD_NOT_ALLOWED": {
       "audience": "public",
       "close_code": 4405,
-      "dev_message": "That path exists but does not accept this method. Check the verb against the docs \u2014 the URL is right.",
       "level": "error",
+      "message": "That path exists but does not accept this method. Check the verb against the docs \u2014 the URL is right.",
       "meta": [],
       "status": 405,
       "type": "method",
@@ -1294,8 +1294,8 @@
     "MODEL_DEPRECATED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That model is deprecated. Use the model named as its replacement.",
       "level": "error",
+      "message": "That model is deprecated. Use the model named as its replacement.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1307,8 +1307,8 @@
     "MODEL_INACTIVE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That model is not active and cannot be selected.",
       "level": "error",
+      "message": "That model is not active and cannot be selected.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1320,8 +1320,8 @@
     "MODEL_NOT_ENABLED_FOR_PLAN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That model is not enabled for this plan.",
       "level": "error",
+      "message": "That model is not enabled for this plan.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1333,8 +1333,8 @@
     "MODEL_NOT_FOUND": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "No model answers that id.",
       "level": "error",
+      "message": "No model answers that id.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1346,8 +1346,8 @@
     "MODEL_PROVIDER_MISMATCH": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That model does not belong to this provider slot.",
       "level": "error",
+      "message": "That model does not belong to this provider slot.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1359,8 +1359,8 @@
     "NOT_ACCEPTABLE": {
       "audience": "public",
       "close_code": 4406,
-      "dev_message": "Nothing this endpoint can return matches the Accept header that was sent. Ask for JSON, or send no Accept header at all.",
       "level": "error",
+      "message": "Nothing this endpoint can return matches the Accept header that was sent. Ask for JSON, or send no Accept header at all.",
       "meta": [],
       "status": 406,
       "type": "not_acceptable",
@@ -1372,8 +1372,8 @@
     "NOT_AUTHENTICATED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "No usable credential was presented on a request that requires one.",
       "level": "error",
+      "message": "No usable credential was presented on a request that requires one.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -1385,8 +1385,8 @@
     "NOT_A_DRAFT": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "That version is not a draft, and this action only applies to a draft.",
       "level": "error",
+      "message": "That version is not a draft, and this action only applies to a draft.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1398,8 +1398,8 @@
     "NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "Nothing answers that identifier.",
       "level": "error",
+      "message": "Nothing answers that identifier.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1411,8 +1411,8 @@
     "NOT_PUBLISHED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "That version is not published, and this action needs a published one.",
       "level": "error",
+      "message": "That version is not published, and this action needs a published one.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1424,8 +1424,8 @@
     "NO_ACTIVE_PLAN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This organization has no active plan.",
       "level": "error",
+      "message": "This organization has no active plan.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1437,8 +1437,8 @@
     "NO_ACTIVE_SUBSCRIPTION": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This organization has no active subscription.",
       "level": "error",
+      "message": "This organization has no active subscription.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1450,8 +1450,8 @@
     "NO_BILLING_CYCLE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This organization has no billing cycle to schedule against.",
       "level": "error",
+      "message": "This organization has no billing cycle to schedule against.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1463,8 +1463,8 @@
     "NO_ORGANIZATION": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "No organization is associated with this login.",
       "level": "error",
+      "message": "No organization is associated with this login.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1476,8 +1476,8 @@
     "NO_PENDING_PLAN_SWITCH": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "No plan switch is scheduled, so there is none to cancel or apply.",
       "level": "error",
+      "message": "No plan switch is scheduled, so there is none to cancel or apply.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1489,8 +1489,8 @@
     "NO_PREPAID_PRICE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This plan has no prepaid price, so units cannot be bought on it.",
       "level": "error",
+      "message": "This plan has no prepaid price, so units cannot be bought on it.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1502,8 +1502,8 @@
     "NO_PUBLISHED_VERSION_FOR_LANGUAGE": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "This form has no published version in {language}. Publish one, or start the session in a language the form already supports.",
       "level": "error",
+      "message": "This form has no published version in {language}. Publish one, or start the session in a language the form already supports.",
       "meta": [
         "language"
       ],
@@ -1517,8 +1517,8 @@
     "NO_REFRESH_TOKEN": {
       "audience": "console",
       "close_code": 4401,
-      "dev_message": "No session was presented, so there is nothing to refresh.",
       "level": "error",
+      "message": "No session was presented, so there is nothing to refresh.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -1530,8 +1530,8 @@
     "OPERATOR_PROTECTED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Operator accounts are not managed through an organization.",
       "level": "error",
+      "message": "Operator accounts are not managed through an organization.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1543,8 +1543,8 @@
     "OPTIONS_REQUIRED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This field type needs a list of options.",
       "level": "error",
+      "message": "This field type needs a list of options.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1556,8 +1556,8 @@
     "OVERSPEND_CEILING_EXCEEDED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That overspend limit is above the ceiling this plan allows.",
       "level": "error",
+      "message": "That overspend limit is above the ceiling this plan allows.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1569,8 +1569,8 @@
     "OVERSPEND_FORBIDDEN_BY_PLAN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This plan does not allow overspend, so no limit can be set for it.",
       "level": "error",
+      "message": "This plan does not allow overspend, so no limit can be set for it.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1582,8 +1582,8 @@
     "OVERSPEND_LIMIT_REACHED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "Usage beyond the plan's included units has reached the agreed overspend limit ({used} of {limit}). Raising the limit is a billing decision, not a configuration one.",
       "level": "error",
+      "message": "Usage beyond the plan's included units has reached the agreed overspend limit ({used} of {limit}). Raising the limit is a billing decision, not a configuration one.",
       "meta": [
         "limit",
         "used",
@@ -1600,8 +1600,8 @@
     "PARSE_ERROR": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "The body could not be parsed as the declared content type. Check for truncated JSON or a Content-Type that does not match what was sent.",
       "level": "error",
+      "message": "The body could not be parsed as the declared content type. Check for truncated JSON or a Content-Type that does not match what was sent.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1613,8 +1613,8 @@
     "PASSWORD_CHANGE_REQUIRED": {
       "audience": "console",
       "close_code": 4403,
-      "dev_message": "A password change is outstanding, so no other route is served for this login.",
       "level": "error",
+      "message": "A password change is outstanding, so no other route is served for this login.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -1626,8 +1626,8 @@
     "PASSWORD_NOT_AVAILABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "This account signs in through a provider, so it has no password here to change.",
       "level": "error",
+      "message": "This account signs in through a provider, so it has no password here to change.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1639,8 +1639,8 @@
     "PAYMENT_METHOD_MISSING": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "A payment method is required before this can proceed.",
       "level": "error",
+      "message": "A payment method is required before this can proceed.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1652,8 +1652,8 @@
     "PAYMENT_METHOD_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No payment method answers that id for this organization.",
       "level": "error",
+      "message": "No payment method answers that id for this organization.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1665,8 +1665,8 @@
     "PERMISSION_DENIED": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "The credential is valid but does not grant access to this.",
       "level": "error",
+      "message": "The credential is valid but does not grant access to this.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -1678,8 +1678,8 @@
     "PERSON_FROZEN": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "This person has been offboarded. The record is kept frozen \u2014 name and email included \u2014 so that everything they did still reads correctly.",
       "level": "error",
+      "message": "This person has been offboarded. The record is kept frozen \u2014 name and email included \u2014 so that everything they did still reads correctly.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1691,8 +1691,8 @@
     "PLAN_ALLOWANCE_EXHAUSTED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "The plan's included units for this cycle are spent ({used} of {limit}) and no prepaid balance remains. Buy units, or wait for the next billing cycle.",
       "level": "error",
+      "message": "The plan's included units for this cycle are spent ({used} of {limit}) and no prepaid balance remains. Buy units, or wait for the next billing cycle.",
       "meta": [
         "limit",
         "used",
@@ -1709,8 +1709,8 @@
     "PLAN_HAS_SUBSCRIBERS": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Organizations are still on this plan. Move them to another one first.",
       "level": "error",
+      "message": "Organizations are still on this plan. Move them to another one first.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1722,8 +1722,8 @@
     "PLAN_INCLUDED_RATE_ABOVE_PREPAID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "Included units cannot cost more per unit than prepaid units.",
       "level": "error",
+      "message": "Included units cannot cost more per unit than prepaid units.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1735,8 +1735,8 @@
     "PLAN_NOT_AVAILABLE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That plan is not available for selection.",
       "level": "error",
+      "message": "That plan is not available for selection.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1748,8 +1748,8 @@
     "PLAN_PREPAID_RATE_ABOVE_OVERAGE": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "The prepaid rate cannot be above the overage rate.",
       "level": "error",
+      "message": "The prepaid rate cannot be above the overage rate.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1761,8 +1761,8 @@
     "PLAN_SWITCH_ALREADY_SCHEDULED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A switch to that plan version is already scheduled. Cancel it first.",
       "level": "error",
+      "message": "A switch to that plan version is already scheduled. Cancel it first.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1774,8 +1774,8 @@
     "PLAN_SWITCH_CUSTOM_BILLING_FLIP": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That target would change how this organization is billed, which a switch may not do.",
       "level": "error",
+      "message": "That target would change how this organization is billed, which a switch may not do.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1787,8 +1787,8 @@
     "PLAN_SWITCH_NOOP": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "That plan version is already the active one, so there is nothing to switch.",
       "level": "error",
+      "message": "That plan version is already the active one, so there is nothing to switch.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1800,8 +1800,8 @@
     "PLAN_SWITCH_PERIOD_SEALED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That date falls in a cycle that is already settled, and settled cycles stay so.",
       "level": "error",
+      "message": "That date falls in a cycle that is already settled, and settled cycles stay so.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1813,8 +1813,8 @@
     "PLAN_SWITCH_WHEN_INVALID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That is not a valid moment for a plan switch.",
       "level": "error",
+      "message": "That is not a valid moment for a plan switch.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1826,8 +1826,8 @@
     "PLAN_USAGE_LEVERS_CONFLICT": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "Usage billing is off for this plan, so every usage lever must be zero \u2014 a non-zero one would read as configuration that does nothing.",
       "level": "error",
+      "message": "Usage billing is off for this plan, so every usage lever must be zero \u2014 a non-zero one would read as configuration that does nothing.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1839,8 +1839,8 @@
     "PLAN_VERSION_DATE_TAKEN": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This plan already has a version starting at that moment.",
       "level": "error",
+      "message": "This plan already has a version starting at that moment.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -1852,8 +1852,8 @@
     "PLAN_VERSION_GAP": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A plan must stay covered by a version at every moment, leaving no gap.",
       "level": "error",
+      "message": "A plan must stay covered by a version at every moment, leaving no gap.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1865,8 +1865,8 @@
     "PLAN_VERSION_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No version of this plan answers that id.",
       "level": "error",
+      "message": "No version of this plan answers that id.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -1878,8 +1878,8 @@
     "PLAN_VERSION_WINDOW_INVERTED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A plan version cannot end before it starts.",
       "level": "error",
+      "message": "A plan version cannot end before it starts.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1889,8 +1889,8 @@
       }
     },
     "PRECONDITION_UNMET": {
-      "dev_message": "{endpoint} was called before {precondition} was satisfied, so it did nothing. The session is unaffected; satisfy it and call the action again.",
       "level": "warning",
+      "message": "{endpoint} was called before {precondition} was satisfied, so it did nothing. The session is unaffected; satisfy it and call the action again.",
       "meta": [
         "endpoint",
         "precondition"
@@ -1904,8 +1904,8 @@
     "PRICING_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Pricing rows are never rewritten \u2014 usage already billed at this price depends on it. Add a row with a later validity window instead.",
       "level": "error",
+      "message": "Pricing rows are never rewritten \u2014 usage already billed at this price depends on it. Add a row with a later validity window instead.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1917,8 +1917,8 @@
     "PRICING_WINDOW_INVERTED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "A pricing window cannot end before it starts.",
       "level": "error",
+      "message": "A pricing window cannot end before it starts.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -1930,8 +1930,8 @@
     "PROMPT_LANGUAGE_NOT_SUPPORTED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "This version supports {languages}, so a prompt cannot be written for another.",
       "level": "error",
+      "message": "This version supports {languages}, so a prompt cannot be written for another.",
       "meta": [
         "languages"
       ],
@@ -1943,8 +1943,8 @@
       }
     },
     "PROVIDER_ADAPTER_INACTIVE": {
-      "dev_message": "The adapter behind {config} is not active, so {provider} was skipped.",
       "level": "warning",
+      "message": "The adapter behind {config} is not active, so {provider} was skipped.",
       "meta": [
         "provider",
         "config"
@@ -1956,8 +1956,8 @@
       }
     },
     "PROVIDER_ADAPTER_MISMATCH": {
-      "dev_message": "The adapter behind {config} does not belong to {provider}. This is a catalogue inconsistency rather than a switch someone turned off.",
       "level": "warning",
+      "message": "The adapter behind {config} does not belong to {provider}. This is a catalogue inconsistency rather than a switch someone turned off.",
       "meta": [
         "provider",
         "config"
@@ -1969,8 +1969,8 @@
       }
     },
     "PROVIDER_CONFIG_DEPRECATED": {
-      "dev_message": "The adapter config {config} selected for {provider} is deprecated. The resolver redirects through a replacement before validating, so reaching this means the replacement chain is itself a dead end.",
       "level": "warning",
+      "message": "The adapter config {config} selected for {provider} is deprecated. The resolver redirects through a replacement before validating, so reaching this means the replacement chain is itself a dead end.",
       "meta": [
         "provider",
         "config"
@@ -1982,8 +1982,8 @@
       }
     },
     "PROVIDER_CONFIG_INACTIVE": {
-      "dev_message": "The adapter config {config} selected for {provider} is not active.",
       "level": "warning",
+      "message": "The adapter config {config} selected for {provider} is not active.",
       "meta": [
         "provider",
         "config"
@@ -1995,8 +1995,8 @@
       }
     },
     "PROVIDER_CONFIG_NOT_ALLOWED": {
-      "dev_message": "The adapter config {config} is linked to specific workflows, and this one is not among them, so it was not used for {provider}.",
       "level": "warning",
+      "message": "The adapter config {config} is linked to specific workflows, and this one is not among them, so it was not used for {provider}.",
       "meta": [
         "provider",
         "config"
@@ -2008,8 +2008,8 @@
       }
     },
     "PROVIDER_CONFIG_PARAM_MISSING": {
-      "dev_message": "The connector behind {config} does not supply every parameter that model requires, so {provider} could not be filled.",
       "level": "warning",
+      "message": "The connector behind {config} does not supply every parameter that model requires, so {provider} could not be filled.",
       "meta": [
         "provider",
         "config"
@@ -2021,8 +2021,8 @@
       }
     },
     "PROVIDER_CONFIG_RETIRED": {
-      "dev_message": "The adapter config {config} selected for {provider} is deprecated and names no replacement, so there is nothing to fall through to.",
       "level": "warning",
+      "message": "The adapter config {config} selected for {provider} is deprecated and names no replacement, so there is nothing to fall through to.",
       "meta": [
         "provider",
         "config"
@@ -2034,8 +2034,8 @@
       }
     },
     "PROVIDER_CONNECTOR_INACTIVE": {
-      "dev_message": "The connector behind {config} is not active, so {provider} was skipped.",
       "level": "warning",
+      "message": "The connector behind {config} is not active, so {provider} was skipped.",
       "meta": [
         "provider",
         "config"
@@ -2047,8 +2047,8 @@
       }
     },
     "PROVIDER_CONNECTOR_KEY_MISSING": {
-      "dev_message": "The connector behind {config} holds no API key, so nothing could authenticate at the vendor and {provider} was skipped.",
       "level": "warning",
+      "message": "The connector behind {config} holds no API key, so nothing could authenticate at the vendor and {provider} was skipped.",
       "meta": [
         "provider",
         "config"
@@ -2060,8 +2060,8 @@
       }
     },
     "PROVIDER_INACTIVE": {
-      "dev_message": "The {provider} capability is switched off platform-wide.",
       "level": "warning",
+      "message": "The {provider} capability is switched off platform-wide.",
       "meta": [
         "provider",
         "config"
@@ -2073,8 +2073,8 @@
       }
     },
     "PROVIDER_MODEL_INACTIVE": {
-      "dev_message": "The catalogue model behind {config} is not active, so {provider} was skipped.",
       "level": "warning",
+      "message": "The catalogue model behind {config} is not active, so {provider} was skipped.",
       "meta": [
         "provider",
         "config"
@@ -2086,8 +2086,8 @@
       }
     },
     "PROVIDER_MODEL_VENDOR_INACTIVE": {
-      "dev_message": "The model vendor behind {config} is not active, so {provider} was skipped. This is the vendor that built the model, not the one serving it.",
       "level": "warning",
+      "message": "The model vendor behind {config} is not active, so {provider} was skipped. This is the vendor that built the model, not the one serving it.",
       "meta": [
         "provider",
         "config"
@@ -2099,8 +2099,8 @@
       }
     },
     "PROVIDER_SERVICE_VENDOR_INACTIVE": {
-      "dev_message": "The service vendor behind {config} is not active, so {provider} was skipped. This is the vendor serving the API, not the one that built the model.",
       "level": "warning",
+      "message": "The service vendor behind {config} is not active, so {provider} was skipped. This is the vendor serving the API, not the one that built the model.",
       "meta": [
         "provider",
         "config"
@@ -2112,8 +2112,8 @@
       }
     },
     "PROVIDER_UNRESOLVED": {
-      "dev_message": "No adapter config could be selected for {provider}: nothing is configured for it on the form, the workspace, the plan or the platform defaults.",
       "level": "warning",
+      "message": "No adapter config could be selected for {provider}: nothing is configured for it on the form, the workspace, the plan or the platform defaults.",
       "meta": [
         "provider"
       ],
@@ -2126,8 +2126,8 @@
     "RANGE_INVALID": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "That range is not valid \u2014 the minimum is above the maximum.",
       "level": "error",
+      "message": "That range is not valid \u2014 the minimum is above the maximum.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2139,8 +2139,8 @@
     "REASON_REQUIRED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "A reason is required: an adjustment without one is unexplained money.",
       "level": "error",
+      "message": "A reason is required: an adjustment without one is unexplained money.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2152,8 +2152,8 @@
     "REGISTRATION_DISABLED": {
       "audience": "console",
       "close_code": 4403,
-      "dev_message": "Registration is switched off platform-wide.",
       "level": "error",
+      "message": "Registration is switched off platform-wide.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -2165,8 +2165,8 @@
     "REPLACEMENT_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No model answers the id given as the replacement.",
       "level": "error",
+      "message": "No model answers the id given as the replacement.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -2178,8 +2178,8 @@
     "REPLACEMENT_REQUIRED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "Deprecating this model requires naming the model that replaces it.",
       "level": "error",
+      "message": "Deprecating this model requires naming the model that replaces it.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2191,8 +2191,8 @@
     "REQUEST_TOO_LARGE": {
       "audience": "public",
       "close_code": 4413,
-      "dev_message": "The request body is larger than this route will read. Send less in one call, or stream it where the endpoint supports that.",
       "level": "error",
+      "message": "The request body is larger than this route will read. Send less in one call, or stream it where the endpoint supports that.",
       "meta": [],
       "status": 413,
       "type": "too_large",
@@ -2202,8 +2202,8 @@
       }
     },
     "SCOPE_STOP_REQUESTED": {
-      "dev_message": "The {scope} scope was asked to stop, and its components are winding down.",
       "level": "debug",
+      "message": "The {scope} scope was asked to stop, and its components are winding down.",
       "meta": [
         "scope"
       ],
@@ -2216,8 +2216,8 @@
     "SECRET_KEY_INVALID": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "That secret key does not match the key it was presented with.",
       "level": "error",
+      "message": "That secret key does not match the key it was presented with.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -2229,8 +2229,8 @@
     "SECRET_KEY_REQUIRED": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "This request needs the secret half of the key pair, not only the key id. Send it from your server \u2014 a secret key must never reach a browser.",
       "level": "error",
+      "message": "This request needs the secret half of the key pair, not only the key id. Send it from your server \u2014 a secret key must never reach a browser.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -2242,8 +2242,8 @@
     "SERVICE_UNAVAILABLE": {
       "audience": "public",
       "close_code": 4503,
-      "dev_message": "A dependency could not be reached. This is transient \u2014 a deploy, or a node moving the process \u2014 so the same request is worth retrying shortly.",
       "level": "error",
+      "message": "A dependency could not be reached. This is transient \u2014 a deploy, or a node moving the process \u2014 so the same request is worth retrying shortly.",
       "meta": [],
       "status": 503,
       "type": "unavailable",
@@ -2255,8 +2255,8 @@
     "SIGNING_KEY_NOT_FOUND": {
       "audience": "public",
       "close_code": 4401,
-      "dev_message": "No active signing key matches that token's key id. The key may have been archived, or the token was signed with a key from another workspace.",
       "level": "error",
+      "message": "No active signing key matches that token's key id. The key may have been archived, or the token was signed with a key from another workspace.",
       "meta": [],
       "status": 401,
       "type": "auth",
@@ -2268,8 +2268,8 @@
     "SOURCE_VERSION_NOT_FOUND": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "The version named as the source does not exist.",
       "level": "error",
+      "message": "The version named as the source does not exist.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2279,8 +2279,8 @@
       }
     },
     "STOP_RECORDING_REQUESTED": {
-      "dev_message": "Recording should stop. The service emits this when a stop condition is reached; a client sends the same event to ask for it.",
       "level": "info",
+      "message": "Recording should stop. The service emits this when a stop condition is reached; a client sends the same event to ask for it.",
       "meta": [],
       "type": "lifecycle",
       "user_message": {
@@ -2291,8 +2291,8 @@
     "TARGET_NOT_PUBLISHED": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "The target version is not published.",
       "level": "error",
+      "message": "The target version is not published.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -2304,8 +2304,8 @@
     "THROTTLED": {
       "audience": "public",
       "close_code": 4429,
-      "dev_message": "Too many requests in the counted window. Back off and retry.",
       "level": "error",
+      "message": "Too many requests in the counted window. Back off and retry.",
       "meta": [],
       "status": 429,
       "type": "rate_limit",
@@ -2315,8 +2315,8 @@
       }
     },
     "TRANSCRIPTION_DOWN": {
-      "dev_message": "Transcription lost its connection and is reconnecting \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Audio captured so far is kept.",
       "level": "warning",
+      "message": "Transcription lost its connection and is reconnecting \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s. Audio captured so far is kept.",
       "meta": [
         "retry_attempt",
         "max_retries",
@@ -2331,8 +2331,8 @@
     "TRANSCRIPTION_FAILED": {
       "audience": "public",
       "close_code": 4500,
-      "dev_message": "Transcription stopped and could not be restarted within its retry budget, so the session ended. Audio already transcribed is kept; start a new session to continue.",
       "level": "error",
+      "message": "Transcription stopped and could not be restarted within its retry budget, so the session ended. Audio already transcribed is kept; start a new session to continue.",
       "meta": [],
       "status": 500,
       "type": "runtime",
@@ -2342,8 +2342,8 @@
       }
     },
     "TRANSCRIPTION_SEND_FAILED": {
-      "dev_message": "A chunk of audio could not be sent to transcription \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s.",
       "level": "warning",
+      "message": "A chunk of audio could not be sent to transcription \u2014 attempt {retry_attempt} of {max_retries}, next in {retry_delay}s.",
       "meta": [
         "retry_attempt",
         "max_retries",
@@ -2358,8 +2358,8 @@
     "UNIT_LEDGER_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Ledger entries are append-only \u2014 the ledger is the money record. Post an adjustment instead of editing an entry.",
       "level": "error",
+      "message": "Ledger entries are append-only \u2014 the ledger is the money record. Post an adjustment instead of editing an entry.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -2371,8 +2371,8 @@
     "UNIT_MAPPING_BACKDATED": {
       "audience": "console",
       "close_code": 4422,
-      "dev_message": "A unit mapping may only take effect now or later. Back-dating one would re-price usage that has already been billed.",
       "level": "error",
+      "message": "A unit mapping may only take effect now or later. Back-dating one would re-price usage that has already been billed.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2382,8 +2382,8 @@
       }
     },
     "UNIT_MAPPING_INCOMPLETE": {
-      "dev_message": "At least one meter this session can produce has no unit mapping in effect, so that usage will be refused rather than recorded at a price nobody configured.",
       "level": "warning",
+      "message": "At least one meter this session can produce has no unit mapping in effect, so that usage will be refused rather than recorded at a price nobody configured.",
       "meta": [],
       "type": "config",
       "user_message": {
@@ -2394,8 +2394,8 @@
     "UNIT_MAPPING_MISSING": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "No unit mapping was in effect for that model and meter unit at the time of the session, so the usage cannot be priced and was refused rather than recorded as free.",
       "level": "error",
+      "message": "No unit mapping was in effect for that model and meter unit at the time of the session, so the usage cannot be priced and was refused rather than recorded as free.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2407,8 +2407,8 @@
     "UNSUPPORTED_MEDIA_TYPE": {
       "audience": "public",
       "close_code": 4415,
-      "dev_message": "This route does not read that content type. The body itself is fine \u2014 send it as one of the types the endpoint documents.",
       "level": "error",
+      "message": "This route does not read that content type. The body itself is fine \u2014 send it as one of the types the endpoint documents.",
       "meta": [],
       "status": 415,
       "type": "unsupported_media",
@@ -2420,8 +2420,8 @@
     "UPSTREAM_INVALID": {
       "audience": "public",
       "close_code": 4502,
-      "dev_message": "A dependency answered with something unusable, so nothing could be relayed. Retrying the same request will produce the same answer \u2014 quote the request id when reporting it.",
       "level": "error",
+      "message": "A dependency answered with something unusable, so nothing could be relayed. Retrying the same request will produce the same answer \u2014 quote the request id when reporting it.",
       "meta": [],
       "status": 502,
       "type": "upstream",
@@ -2431,8 +2431,8 @@
       }
     },
     "USAGE_METERED": {
-      "dev_message": "Metered {quantity} {meter_unit} against {adapter_config_key}.",
       "level": "debug",
+      "message": "Metered {quantity} {meter_unit} against {adapter_config_key}.",
       "meta": [
         "adapter_config_key",
         "meter_unit",
@@ -2447,8 +2447,8 @@
     "USAGE_RECORD_IMMUTABLE": {
       "audience": "console",
       "close_code": 4409,
-      "dev_message": "Usage records are append-only \u2014 they are the evidence behind an invoice. Write a correcting entry instead of editing this one.",
       "level": "error",
+      "message": "Usage records are append-only \u2014 they are the evidence behind an invoice. Write a correcting entry instead of editing this one.",
       "meta": [],
       "status": 409,
       "type": "conflict",
@@ -2460,8 +2460,8 @@
     "VALIDATION_ERROR": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "The request could not be processed as sent. See the causes listed with it.",
       "level": "error",
+      "message": "The request could not be processed as sent. See the causes listed with it.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2471,8 +2471,8 @@
       }
     },
     "WEBSOCKET_KIND_UNSUPPORTED": {
-      "dev_message": "This workflow has no {kind} connection, so the one that was opened was closed. The session is unaffected \u2014 stop opening it.",
       "level": "warning",
+      "message": "This workflow has no {kind} connection, so the one that was opened was closed. The session is unaffected \u2014 stop opening it.",
       "meta": [
         "kind"
       ],
@@ -2485,8 +2485,8 @@
     "WORKFLOW_FEATURE_UNKNOWN": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "The workflow exists but is bound to a feature this release does not implement. Nothing in the request can fix it \u2014 it is a configuration gap on our side.",
       "level": "error",
+      "message": "The workflow exists but is bound to a feature this release does not implement. Nothing in the request can fix it \u2014 it is a configuration gap on our side.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -2498,8 +2498,8 @@
     "WORKFLOW_KIND_NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "No workflow of that kind exists. Check the name against the ones your plan enables.",
       "level": "error",
+      "message": "No workflow of that kind exists. Check the name against the ones your plan enables.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -2511,8 +2511,8 @@
     "WORKFLOW_NOT_FOUND": {
       "audience": "public",
       "close_code": 4404,
-      "dev_message": "No session answers that id. It was never created, or it has ended and been swept. Create a new session rather than retrying this one.",
       "level": "error",
+      "message": "No session answers that id. It was never created, or it has ended and been swept. Create a new session rather than retrying this one.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -2524,8 +2524,8 @@
     "WORKFLOW_STANDALONE_MODE_UNSUPPORTED": {
       "audience": "public",
       "close_code": 4422,
-      "dev_message": "That workflow cannot run with a configuration declared in code. Configure it in the portal and resolve it by form key instead.",
       "level": "error",
+      "message": "That workflow cannot run with a configuration declared in code. Configure it in the portal and resolve it by form key instead.",
       "meta": [],
       "status": 422,
       "type": "validation",
@@ -2537,8 +2537,8 @@
     "WORKSPACE_INACTIVE": {
       "audience": "public",
       "close_code": 4403,
-      "dev_message": "That workspace is not active. A deactivated workspace can be switched back on in the portal; an archived one is final, and its sessions, keys and forms stay frozen with it.",
       "level": "error",
+      "message": "That workspace is not active. A deactivated workspace can be switched back on in the portal; an archived one is final, and its sessions, keys and forms stay frozen with it.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -2550,8 +2550,8 @@
     "WORKSPACE_NOT_FOUND": {
       "audience": "console",
       "close_code": 4404,
-      "dev_message": "No workspace answers that id for this organization.",
       "level": "error",
+      "message": "No workspace answers that id for this organization.",
       "meta": [],
       "status": 404,
       "type": "not_found",
@@ -2563,8 +2563,8 @@
     "WORKSPACE_OWNER_REQUIRED": {
       "audience": "console",
       "close_code": 4403,
-      "dev_message": "Only a workspace owner can do this.",
       "level": "error",
+      "message": "Only a workspace owner can do this.",
       "meta": [],
       "status": 403,
       "type": "access",
@@ -2576,8 +2576,8 @@
     "WORKSPACE_QUOTA_EXCEEDED": {
       "audience": "public",
       "close_code": 4402,
-      "dev_message": "The workspace has used {used} of its {limit} units for this {layer}. Raise the workspace's limit, or wait for the period to roll over.",
       "level": "error",
+      "message": "The workspace has used {used} of its {limit} units for this {layer}. Raise the workspace's limit, or wait for the period to roll over.",
       "meta": [
         "limit",
         "used",

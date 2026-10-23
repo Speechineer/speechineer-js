@@ -15,7 +15,7 @@
  *   how developer prose reaches a UI; falling back the other way tells an integrator nothing.
  *   Both fall back to the `code`, which is honest and renders as something rather than `""`. A
  *   well-formed service event cannot hit either path: the protocol refuses at class creation to
- *   declare an event without a `dev_message` and a default-language `user_message`.
+ *   declare an event without a `message` and a default-language `user_message`.
  */
 
 import { SpeechineerError } from '../../../errors/base.js';
@@ -68,9 +68,9 @@ const BY_TYPE: Record<string, typeof SpeechineerError> = {
 };
 
 /** The two sentences, each independent of the other. See the note at the top of the file. */
-function sentences(event: EventSdk): { devMessage: string; userMessage: string } {
+function sentences(event: EventSdk): { message: string; userMessage: string } {
   return {
-    devMessage: event.dev_message || event.code,
+    message: event.message || event.code,
     userMessage: event.user_message || event.code,
   };
 }

@@ -58,7 +58,7 @@ export function fromCloseFrame(closeCode: number, reason: string, language?: Sdk
   return {
     code,
     type: type ?? (declared ? null : SDK_ERRORS.UNKNOWN.type),
-    dev_message: renderTemplate(SDK_ERRORS.UNKNOWN.devMessage, meta),
+    message: renderTemplate(SDK_ERRORS.UNKNOWN.message, meta),
     user_message: sdkUserMessage('UNKNOWN', language, meta),
     meta,
   };

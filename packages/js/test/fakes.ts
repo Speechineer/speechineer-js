@@ -175,13 +175,13 @@ export const ok = <T>(data: T) => ({ ok: true as const, data, meta: {} });
 
 /** A failure envelope. `errors` is cause-ordered, root cause first, exactly as the service sends. */
 export const failed = (
-  ...errors: { code: string; type?: string; dev_message?: string; user_message?: string }[]
+  ...errors: { code: string; type?: string; message?: string; user_message?: string }[]
 ) => ({ ok: false as const, errors, meta: {} });
 
 /** One frame, in the shape `event_of` reads: the event filed under the field its level names. */
 export const frame = (
   level: 'debug' | 'info' | 'warning' | 'error',
-  event: { code: string; type?: string; dev_message?: string; user_message?: string; meta?: unknown },
+  event: { code: string; type?: string; message?: string; user_message?: string; meta?: unknown },
   sessionId = 'sess-1',
 ) => ({
   level,

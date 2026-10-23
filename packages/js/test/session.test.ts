@@ -342,7 +342,7 @@ describe('restart re-seeds the service', () => {
   it('a session archived while stopped is rebuilt through create with the old id', async () => {
     // `WORKFLOW_NOT_FOUND` is the code the resume chain advances on — renamed from
     // `SESSION_NOT_FOUND` by the protocol, which is the rename that silently broke this chain.
-    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' }));
+    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', message: 'gone' }));
     const createWorkflow = vi.fn().mockResolvedValueOnce(ok(answer('sess-1'))).mockResolvedValueOnce(ok(answer('sess-2')));
     const { session, params } = speechToForm({ getWorkflow, createWorkflow });
     await session.start();
@@ -385,7 +385,7 @@ describe('restart re-seeds the service', () => {
 
   it('a session minted while the user was cancelling is deleted, not left orphaned', async () => {
     let releaseCreate: (a: ReturnType<typeof ok<ReturnType<typeof answer>>>) => void = () => {};
-    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' }));
+    const getWorkflow = vi.fn().mockResolvedValue(failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', message: 'gone' }));
     const createWorkflow = vi
       .fn()
       .mockResolvedValueOnce(ok(answer('sess-1')))
@@ -472,7 +472,7 @@ describe('main connection', () => {
   });
 
   it('4404 → get 404 → create with resume target → fresh create', async () => {
-    const gone = () => failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', dev_message: 'gone' });
+    const gone = () => failed({ code: 'WORKFLOW_NOT_FOUND', type: 'not_found', message: 'gone' });
     const getWorkflow = vi.fn().mockResolvedValue(gone());
     const createWorkflow = vi
       .fn()
@@ -502,7 +502,7 @@ describe('main connection', () => {
     // What actually failed, not a generic "recovery failed": the thrown reason rides
     // `meta.detail` and is interpolated into the declaration's sentence.
     expect(session.getState().errors[0]).toMatchObject({ code: 'UNKNOWN' });
-    expect(session.getState().errors[0].devMessage).toContain('down');
+    expect(session.getState().errors[0].message).toContain('down');
   });
 
   it.each([
@@ -511,7 +511,7 @@ describe('main connection', () => {
       {
         code: 'EXTRACTION_FAILED',
         type: 'runtime',
-        dev_message: 'Field extraction could not be restarted.',
+        message: 'Field extraction could not be restarted.',
         user_message: 'Die Verarbeitung wurde unterbrochen.',
       },
     ],
@@ -520,7 +520,7 @@ describe('main connection', () => {
       {
         code: 'ACCOUNT_QUOTA_EXCEEDED',
         type: 'quota',
-        dev_message: 'This account has used 1000 of its 1000 units.',
+        message: 'This account has used 1000 of its 1000 units.',
         user_message: 'Das Guthaben ist aufgebraucht.',
         meta: { limit: '1000', used: '1000', remaining: '0', layer: 'account:month' },
       },
@@ -543,7 +543,7 @@ describe('main connection', () => {
     expect(err).toMatchObject({ code: error.code, type: error.type });
     // Both sentences survive the frame — the reader on the screen and the reader in the logs.
     expect(err.userMessage).toBe(error.user_message);
-    expect(err.devMessage).toBe(error.dev_message);
+    expect(err.message).toBe(error.message);
     expect(err.meta).toEqual((error as { meta?: Record<string, unknown> }).meta ?? null);
     expect(params.onError).toHaveBeenCalledTimes(1);
     // The same instance on both channels — a caller never has to reconcile two objects.
@@ -558,7 +558,7 @@ describe('main connection', () => {
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').message(
-      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' }),
     );
     FakeWebSocket.byUrl('lifeline').serverClose(4500, 'runtime:EXTRACTION_FAILED');
 
@@ -595,7 +595,7 @@ describe('main connection', () => {
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').message(
-      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' }),
     );
     expect(session.getState().status).toBe('failed');
 
@@ -619,7 +619,7 @@ describe('main connection', () => {
 
     expect(params.onError).toHaveBeenCalledTimes(1);
     expect(session.getState().errors[0]).toMatchObject({ code: 'UNKNOWN', type: 'client' });
-    expect(session.getState().errors[0].devMessage).toContain('4500');
+    expect(session.getState().errors[0].message).toContain('4500');
   });
 
   it('a non-terminal frame reaches its own level hook AND onEvent', async () => {
@@ -636,7 +636,7 @@ describe('main connection', () => {
       frame('warning', {
         code: 'TRANSCRIPTION_DOWN',
         type: 'recovery',
-        dev_message: 'Transcription dropped; retrying.',
+        message: 'Transcription dropped; retrying.',
         user_message: 'Die Spracherkennung wird neu verbunden.',
         meta: { retry_attempt: 1 },
       }),
@@ -646,7 +646,7 @@ describe('main connection', () => {
       level: 'warning',
       code: 'TRANSCRIPTION_DOWN',
       type: 'recovery',
-      devMessage: 'Transcription dropped; retrying.',
+      message: 'Transcription dropped; retrying.',
       userMessage: 'Die Spracherkennung wird neu verbunden.',
       meta: { retry_attempt: 1 },
     };
@@ -665,7 +665,7 @@ describe('main connection', () => {
     await session.start();
     FakeWebSocket.byUrl('lifeline').open();
     FakeWebSocket.byUrl('lifeline').message(
-      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', dev_message: 'kaput' }),
+      frame('error', { code: 'EXTRACTION_FAILED', type: 'runtime', message: 'kaput' }),
     );
 
     expect(params.onError).toHaveBeenCalledTimes(1);
@@ -722,7 +722,7 @@ describe('end / dispose', () => {
     // The local teardown still completes — the app reaches `idle` either way — but the caller
     // is told the session may still be running on the server, which a console.warn never did.
     await expect(session.end()).rejects.toMatchObject({ code: 'UNKNOWN' });
-    expect(session.getState().errors[0].devMessage).toContain('nope');
+    expect(session.getState().errors[0].message).toContain('nope');
     expect(deleteWorkflow).toHaveBeenCalledTimes(1);
     expect(session.getState()).toMatchObject({
       status: 'idle',
@@ -823,7 +823,7 @@ describe('text-to-form', () => {
     await expect(s.extract('x')).rejects.toMatchObject({ code: 'UNKNOWN' });
     expect(s.getState().status).toBe('active');
     expect(s.getState().errors[0]).toMatchObject({ code: 'UNKNOWN' });
-    expect(s.getState().errors[0].devMessage).toContain('nope');
+    expect(s.getState().errors[0].message).toContain('nope');
     expect(params.onError).toHaveBeenCalledTimes(1);
   });
 });

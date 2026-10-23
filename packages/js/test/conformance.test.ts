@@ -45,7 +45,7 @@ interface Manifest {
       audience?: string;
       status?: number;
       close_code?: number;
-      dev_message: string;
+      message: string;
       user_message: Record<string, string>;
       meta: string[];
     }
@@ -144,7 +144,7 @@ describe('conformance with the service vocabulary', () => {
 
   it('carries a sentence in every language for every code it declares itself', () => {
     for (const [code, declared] of Object.entries(SDK_ERRORS)) {
-      expect(declared.devMessage.length, `${code} has no developer sentence`).toBeGreaterThan(0);
+      expect(declared.message.length, `${code} has no developer sentence`).toBeGreaterThan(0);
       for (const language of SDK_LANGUAGES) {
         expect(declared.userMessage[language]?.length, `${code} has no ${language}`).toBeGreaterThan(0);
       }

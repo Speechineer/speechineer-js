@@ -219,7 +219,7 @@ describe('sessions from the client (stubbed fetch)', () => {
     await expect(session.start()).rejects.toMatchObject({ code: 'NETWORK' });
     expect(session.getState().errors[0].userMessage).toBe('Speechineer konnte nicht erreicht werden.');
     // The developer half stays English — it is read by whoever integrates, not by the visitor.
-    expect(session.getState().errors[0].devMessage).toContain('Could not reach Speechineer');
+    expect(session.getState().errors[0].message).toContain('Could not reach Speechineer');
   });
 
   it('textToForm: extract auto-starts (create-portal) and then POSTs the extract action', async () => {
@@ -257,7 +257,7 @@ describe('sessions from the client (stubbed fetch)', () => {
                 code: 'FEATURE_NOT_AVAILABLE',
                 type: 'access',
                 user_message: 'Das ist nicht verfügbar.',
-                dev_message: 'That feature is not enabled for this workspace.',
+                message: 'That feature is not enabled for this workspace.',
               },
             ],
             meta: { request_id: 'req-1' },
@@ -280,7 +280,7 @@ describe('sessions from the client (stubbed fetch)', () => {
     });
     // Both sentences arrive, for their two different readers.
     expect(session.getState().errors[0].userMessage).toBe('Das ist nicht verfügbar.');
-    expect(session.getState().errors[0].devMessage).toBe(
+    expect(session.getState().errors[0].message).toBe(
       'That feature is not enabled for this workspace.',
     );
     // The request id rides the envelope's meta, not the error.
@@ -296,8 +296,8 @@ describe('sessions from the client (stubbed fetch)', () => {
           JSON.stringify({
             ok: false,
             errors: [
-              { code: 'UNIT_MAPPING_MISSING', type: 'conflict', dev_message: 'no mapping' },
-              { code: 'INTERNAL_ERROR', type: 'service', dev_message: 'wrapped' },
+              { code: 'UNIT_MAPPING_MISSING', type: 'conflict', message: 'no mapping' },
+              { code: 'INTERNAL_ERROR', type: 'service', message: 'wrapped' },
             ],
           }),
           { status: 409 },
@@ -327,6 +327,6 @@ describe('sessions from the client (stubbed fetch)', () => {
     expect(session.getState().errors[0]).toMatchObject({ code: 'NETWORK', type: 'client' });
     // The underlying reason rides `meta`, interpolated into the developer sentence rather than
     // replacing it.
-    expect(session.getState().errors[0].devMessage).toContain('Failed to fetch');
+    expect(session.getState().errors[0].message).toContain('Failed to fetch');
   });
 });

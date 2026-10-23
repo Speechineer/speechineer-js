@@ -9,9 +9,8 @@
  *   notices — an error, a warning, an info and a debug are the same five fields under different
  *   levels. This file replaces the old `problem.ts`.
  * - **Two sentences, not one.** `user_message` is for the person on the screen (translated by
- *   the service, per session language); `dev_message` is for the integrator (English, no
- *   architecture). The operator's log line never travels. A single `message` field is what this
- *   contract removed, so nothing here has one.
+ *   the service, per session language); `message` is for the integrator (English, no
+ *   architecture). The operator's log line never travels.
  * - **One vocabulary per level.** Only `ErrorType` carries a status, because only a failure can
  *   end a response or a connection. Giving a warning a status would mint values nothing can
  *   emit or check.
@@ -145,7 +144,7 @@ export interface EventSdk {
   /** For the person on the screen, already translated into the session's language. */
   user_message?: string | null;
   /** For the integrator: English, says what to do about it, never describes the internals. */
-  dev_message?: string | null;
+  message?: string | null;
   /** The event's own typed payload. Which keys appear is graded by the session's verbosity. */
   meta?: Record<string, unknown> | null;
 }

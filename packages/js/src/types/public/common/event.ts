@@ -51,7 +51,7 @@ export interface SpeechineerEvent {
   /** For the person using your app, in the session's language. Show this one. */
   userMessage: string;
   /** For you: what happened and what to do about it. Belongs in your logs. */
-  devMessage: string;
+  message: string;
   /** Data belonging to this particular event — the shape depends on `code`. */
   meta: Record<string, unknown> | null;
 }

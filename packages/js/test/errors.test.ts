@@ -43,7 +43,7 @@ describe('fromEvent', () => {
     ['service', SpeechineerServiceError],
     ['unavailable', SpeechineerUnavailableError],
   ])('a %s failure is a %s', (type, Expected) => {
-    const err = fromEvent({ code: 'SOMETHING', type, dev_message: 'went wrong' });
+    const err = fromEvent({ code: 'SOMETHING', type, message: 'went wrong' });
 
     expect(err).toBeInstanceOf(Expected);
     expect(err).toBeInstanceOf(SpeechineerError);
@@ -59,7 +59,7 @@ describe('fromEvent', () => {
   // lookup table, which a test asserting the table back would only restate.
   it('gives every category a class of its own', () => {
     const constructors = ERROR_TYPES.map(
-      (type) => fromEvent({ code: 'SOMETHING', type, dev_message: 'went wrong' }).constructor,
+      (type) => fromEvent({ code: 'SOMETHING', type, message: 'went wrong' }).constructor,
     );
 
     for (const [i, type] of ERROR_TYPES.entries()) {
@@ -80,7 +80,7 @@ describe('fromEvent', () => {
     const err = fromEvent({
       code: 'ACCOUNT_QUOTA_EXCEEDED',
       type: 'quota',
-      dev_message: 'This account has used 1000 of its 1000 units for this account:month.',
+      message: 'This account has used 1000 of its 1000 units for this account:month.',
       user_message: 'Das Guthaben ist aufgebraucht.',
       meta: { limit: '1000', used: '1000', remaining: '0', layer: 'account:month' },
     });
@@ -94,28 +94,37 @@ describe('fromEvent', () => {
       code: 'EXTRACTION_FAILED',
       type: 'runtime',
       user_message: 'Die Verarbeitung wurde unterbrochen.',
-      dev_message: 'Field extraction could not be restarted. Start a new session.',
+      message: 'Field extraction could not be restarted. Start a new session.',
     });
 
     // The one a UI shows is the translated one; the one in a stack trace is the English one.
     expect(err.userMessage).toBe('Die Verarbeitung wurde unterbrochen.');
-    expect(err.devMessage).toBe('Field extraction could not be restarted. Start a new session.');
-    expect(err.message).toBe(err.devMessage);
+    expect(err.message).toBe('Field extraction could not be restarted. Start a new session.');
+  });
+
+  it('keeps the developer sentence when an error is serialised for a log', () => {
+    // A structured logger serialises what it is handed. `Error` makes `message` non-enumerable,
+    // so without care a logged error would carry its code and translated sentence but not the
+    // English one written for whoever reads the log.
+    const err = fromEvent({ code: 'FORM_NOT_FOUND', type: 'not_found', message: 'No form with that key.' });
+
+    expect(JSON.parse(JSON.stringify(err)).message).toBe('No form with that key.');
+    expect({ ...err }.message).toBe('No form with that key.');
   });
 
   it('never shows a developer sentence to a user when one is missing', () => {
     // A declared event always carries both — the protocol refuses at class creation otherwise —
     // so this only covers a payload that already broke the contract. Falling back to the code is
-    // honest; falling back to `devMessage` is how developer prose reaches a UI.
-    const err = fromEvent({ code: 'ODDLY_INCOMPLETE', type: 'service', dev_message: 'internals' });
+    // honest; falling back to `message` is how developer prose reaches a UI.
+    const err = fromEvent({ code: 'ODDLY_INCOMPLETE', type: 'service', message: 'internals' });
 
     expect(err.userMessage).toBe('ODDLY_INCOMPLETE');
-    expect(err.devMessage).toBe('internals');
+    expect(err.message).toBe('internals');
   });
 
   it('falls back to the base class for a category this build has never heard of', () => {
     // A newer service naming a category must never break an older app's error handling.
-    const err = fromEvent({ code: 'SOMETHING_NEW', type: 'teleportation', dev_message: 'hm' });
+    const err = fromEvent({ code: 'SOMETHING_NEW', type: 'teleportation', message: 'hm' });
 
     expect(err).toBeInstanceOf(SpeechineerError);
     expect(err.type).toBe('teleportation');
@@ -124,7 +133,7 @@ describe('fromEvent', () => {
   it('leaves an absent category absent rather than guessing one', () => {
     // A close frame whose reason carried no type lands here. Defaulting to `service` would make
     // `instanceof SpeechineerServiceError` true for a failure nobody categorised.
-    const err = fromEvent({ code: 'SOMETHING', dev_message: 'no type was sent' });
+    const err = fromEvent({ code: 'SOMETHING', message: 'no type was sent' });
 
     expect(err).toBeInstanceOf(SpeechineerError);
     expect(err).not.toBeInstanceOf(SpeechineerServiceError);
@@ -150,7 +159,7 @@ describe('toSpeechineerError', () => {
   it('passes an already-converted failure through unchanged', () => {
     // No re-classification on the way past: the category Speechineer gave it survives however
     // many frames it propagates through, which is why there is no `phase` to stamp any more.
-    const e = fromEvent({ code: 'ACCOUNT_QUOTA_EXCEEDED', type: 'quota', dev_message: 'spent' });
+    const e = fromEvent({ code: 'ACCOUNT_QUOTA_EXCEEDED', type: 'quota', message: 'spent' });
 
     expect(toSpeechineerError(e)).toBe(e);
   });
@@ -178,7 +187,7 @@ describe('toSpeechineerError', () => {
     const err = toSpeechineerError(domError('NotAllowedError'));
 
     expect(err.userMessage).toBe('Microphone access was denied. Allow it in the browser to continue.');
-    expect(err.devMessage).toContain('user gesture');
+    expect(err.message).toContain('user gesture');
   });
 
   it('renders its own user sentences in the language asked for', () => {
@@ -186,6 +195,6 @@ describe('toSpeechineerError', () => {
 
     expect(err.userMessage).toBe('Es wurde kein Mikrofon gefunden.');
     // The developer half stays English: it is read by whoever integrates, not by the visitor.
-    expect(err.devMessage).toBe('No usable microphone was found.');
+    expect(err.message).toBe('No usable microphone was found.');
   });
 });

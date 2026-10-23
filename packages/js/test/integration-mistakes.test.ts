@@ -156,7 +156,7 @@ describe('driving the lifecycle wrong', () => {
   });
 
   it('a failing start() reaches BOTH the rejection and the state, so either style works', async () => {
-    stubFetch(failed({ code: 'FORM_NOT_FOUND', type: 'not_found', dev_message: 'No form with that key.' }), 404);
+    stubFetch(failed({ code: 'FORM_NOT_FOUND', type: 'not_found', message: 'No form with that key.' }), 404);
     const onError = vi.fn();
     const session = client().speechToForm({ form: FORM, onError });
 
@@ -192,7 +192,7 @@ describe('naming the form wrong', () => {
       failed({
         code: 'FORM_NOT_FOUND',
         type: 'not_found',
-        dev_message: 'No form with key "intake-v2" in this workspace.',
+        message: 'No form with key "intake-v2" in this workspace.',
         user_message: 'This form is not available.',
       }),
       404,
@@ -209,8 +209,7 @@ describe('naming the form wrong', () => {
     expect(error.type).toBe('not_found');
     // And both sentences, which is the whole point of the pair: one to show, one to log.
     expect(error.userMessage).toBe('This form is not available.');
-    expect(error.devMessage).toBe('No form with key "intake-v2" in this workspace.');
-    expect(error.message).toBe(error.devMessage);
+    expect(error.message).toBe('No form with key "intake-v2" in this workspace.');
   });
 
   it('a draft version is a DIFFERENT code from a missing form — the remedy differs', async () => {
@@ -227,9 +226,9 @@ describe('naming the form wrong', () => {
     // reports both at once; a caller that renders only `errors[0]` fixes one and comes back.
     stubFetch(
       failed(
-        { code: 'OPTIONS_REQUIRED', type: 'validation', dev_message: '`insurance` is a select with no options.' },
-        { code: 'RANGE_INVALID', type: 'validation', dev_message: '`pain` is a slider with no range.' },
-        { code: 'VALIDATION_ERROR', type: 'validation', dev_message: 'Validation failed.' },
+        { code: 'OPTIONS_REQUIRED', type: 'validation', message: '`insurance` is a select with no options.' },
+        { code: 'RANGE_INVALID', type: 'validation', message: '`pain` is a slider with no range.' },
+        { code: 'VALIDATION_ERROR', type: 'validation', message: 'Validation failed.' },
       ),
       422,
     );
@@ -359,8 +358,7 @@ describe('the language the person is shown', () => {
     // What the person reads.
     expect((error as { userMessage: string }).userMessage).toBe('Diese Anwendung ist nicht korrekt eingerichtet.');
     // What the log reads — English, always, whatever the UI language is.
-    expect((error as { devMessage: string }).devMessage).toContain('No credentials');
-    expect((error as { message: string }).message).toBe((error as { devMessage: string }).devMessage);
+    expect((error as { message: string }).message).toContain('No credentials');
   });
 
   it('a session overrides the client for a failure the SESSION raises', async () => {
@@ -395,7 +393,7 @@ describe('the language the person is shown', () => {
     expect(error).toMatchObject({ code: 'NO_AUTH' });
     expect((error as { userMessage: string }).userMessage).toBe('Diese Anwendung ist nicht korrekt eingerichtet.');
     // The developer half stays English whatever the UI language is.
-    expect((error as { devMessage: string }).devMessage).toContain('No credentials');
+    expect((error as { message: string }).message).toContain('No credentials');
   });
 });
 
@@ -413,7 +411,7 @@ describe('calling an action too early for the SERVICE', () => {
       failed({
         code: 'ACTION_PRECONDITION_UNMET',
         type: 'conflict',
-        dev_message: 'Nothing has been transcribed yet, so there is nothing to extract.',
+        message: 'Nothing has been transcribed yet, so there is nothing to extract.',
       }),
       409,
     );
